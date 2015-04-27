@@ -1,28 +1,39 @@
 <?php
-/**
- * Part of Robin Radic's PHP packages.
- *
- * MIT License and copyright information bundled with this package
- * in the LICENSE file or visit http://radic.mit-license.org
+ /**
+ * Part of the Laradic packages.
+ * MIT License and copyright information bundled with this package in the LICENSE file.
+ * @author      Robin Radic
+ * @license     MIT
+ * @copyright   2011-2015, Robin Radic
+ * @link        http://radic.mit-license.org
  */
 namespace Laradic\Generators\Providers;
 
 use Laradic\Console\AggregateConsoleProvider;
 
 /**
- * This is the ConsoleServiceProvider class.
+ * Class ConsoleServiceProvider
  *
- * @package                Laradic\Generators
- * @version                1.0.0
- * @author                  Robin Radic
- * @license                MIT License
- * @copyright            2015, Robin Radic
- * @link                      https://github.com/robinradic
+ * @package     Laradic\Generators
  */
 class ConsoleServiceProvider extends AggregateConsoleProvider
 {
+
+    /**
+     * The namespace where the commands are
+     *
+     * @var string
+     */
     protected $namespace = 'Laradic\Generators\Console';
+
+    /**
+     * The commands that should be registered.
+     * className (without Command suffix) => 'command.slug'
+     *
+     * @var array
+     */
     protected $commands = [
-        'GeneratorsList' => 'laradic.generators.commands.list'
+        // Something resolves to class name 'SomethingCommand'
+        'GenerateScaffold' => 'command.laradic.generators.scaffold'
     ];
 }

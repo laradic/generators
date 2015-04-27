@@ -1,9 +1,12 @@
 <?php
 /**
- * Part of  Robin Radic's PHP packages.
+ * Part of the Laradic packages.
+ * MIT License and copyright information bundled with this package in the LICENSE file.
  *
- * MIT License and copyright information bundled with this package
- * in the LICENSE file or visit http://radic.mit-license.org
+ * @author      Robin Radic
+ * @license     MIT
+ * @copyright   2011-2015, Robin Radic
+ * @link        http://radic.mit-license.org
  */
 namespace Laradic\Generators;
 
@@ -12,33 +15,33 @@ use Laradic\Config\Traits\ConfigProviderTrait;
 use Laradic\Support\ServiceProvider;
 
 /**
- * {@inheritdoc}
+ * Class GeneratorsServiceProvider
+ *
+ * @package     Laradic\Generators
  */
 class GeneratorsServiceProvider extends ServiceProvider
 {
     use ConfigProviderTrait;
 
-    protected $providers = [
-        'Laradic\Generators\Providers\ConsoleServiceProvider'
-    ];
-
-    /**
-     * {@inheritdoc}
-     */
     public function boot()
     {
-        /** @var  \Illuminate\Foundation\Application $app */
+        /** @var \Illuminate\Foundation\Application $app */
         $app = parent::boot();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function register()
     {
-        /** @var  \Illuminate\Foundation\Application $app */
+        /** @var \Illuminate\Foundation\Application $app */
         $app = parent::register();
-        $this->addConfigComponent('laradic/generators', 'laradic/generators', __DIR__ . '/../resources/config');
+        $app->bind('laradic.generator', function (Application $app)
+        {
+            return new Generator($app->make('files'));
+        });
 
+        $this->addConfigComponent('laradic/generator', 'laradic/generator', realpath(__DIR__ . '/../resources/config'));
+        if ( $this->app->runningInConsole() )
+        {
+            $app->register('Laradic\Generators\Providers\ConsoleServiceProvider');
+        }
     }
 }

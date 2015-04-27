@@ -7,6 +7,16 @@
  * @copyright   2011-2015, Robin Radic
  * @link        http://radic.mit-license.org
  */
-return array(
+namespace Extensions\Models;
 
-);
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * Class Extension
+ *
+ * @package     Extensions\Models
+ */
+class Extension extends Model
+{
+    protected $fillable = ['slug', 'installed'];
+}
