@@ -11,7 +11,9 @@
 namespace Laradic\Generators;
 
 use Laradic\Support\Filesystem;
-use Laradic\Support\TemplateParser;
+use Illuminate\Contracts\View\Factory as View;
+use Laradic\Support\String;
+use Laradic\Support\Traits\DotArrayAccessTrait;
 
 /**
  * Class Generator
@@ -20,81 +22,163 @@ use Laradic\Support\TemplateParser;
  */
 class Generator
 {
-    /** @var \Laradic\Support\TemplateParser  */
-    protected $parser;
+    use DotArrayAccessTrait;
 
-    /** @var \Laradic\Support\Filesystem  */
-    protected $files;
+    protected function getArrayAccessor()
+    {
+        return 'attributes';
+    }
 
-    protected $destinationDirPath;
+    protected $attributes = [];
+
+    /** @var \Laradic\Support\Filesystem */
+    protected $fs;
 
     /**
-     * Instantiates the class
-     *
-     * @param \Laradic\Support\Filesystem $files
+     * @var \Illuminate\View\Factory
      */
-    public function __construct(Filesystem $files)
+    protected $view;
+
+    /**
+     * Absolute path to the source "stubs" directory
+     * @var
+     */
+    protected $from;
+
+    /**
+     * Absolute path to the destination directory
+     * @var string
+     */
+    protected $to;
+
+    /** Instantiates the class
+     *
+     * @param \Laradic\Support\Filesystem        $files
+     * @param \Illuminate\Contracts\View\Factory $view
+     */
+    public function __construct(Filesystem $fs, View $view)
     {
-        $this->files  = $files;
-        $this->parser = new TemplateParser($files, $this->getStubsPath());
+        $this->fs = $fs;
+        $this->view  = $view;
     }
 
-    public function create($stubFile, $destination, array $values = array())
+    public function generate(array $files, array $values = [])
     {
-        $this->parser->copy($stubFile, $destination, $values);
+        $package = 'ewr';
+        $files2 = [
+            'composer.dev.json.stub'                    => 'composer.dev.json',
+            'composer.json.stub'                        => 'composer.json',
+            'gitignore.stub'                            => '.gitignore',
+            'phpunit.xml.stub'                          => 'phpunit.xml',
+            'travis.yml.stub'                           => 'travis.yml',
+            'resources/config/config.stub'              => false,
+            'src/Providers/ConsoleServiceProvider.stub' => 'ConsoleServiceProvider.php',
+            'src/PackageServiceProvider.stub'           => ucfirst($package) . 'ServiceProvider.php',
+            'src/Console/ListCommand.stub'              => ucfirst($package) . 'ListCommand.php'
+        ];
+        foreach ( $files as $src => $fileName )
+        {
+            $segments    = explode('/', $src);
+            $srcFileName = last($segments);
+            array_pop($segments);
+            $srcDir = implode('/', $segments);
+
+
+            $destinationDir = path_join($this->to, $srcDir);
+            if ( $fileName === false )
+            {
+                $fileName = String::remove($srcFileName, '.stub');
+            }
+            $destinationPath = path_join($destinationDir, $fileName);
+
+            $src = path_join($this->from, $src);
+
+            if ( ! $this->fs->isDirectory($destinationDir) )
+            {
+                $this->mkdir($destinationDir);
+            }
+
+            $content = $this->render($src, array_replace_recursive($this->attributes, $values));
+
+            $this->fs->put($destinationPath, $content);
+        }
     }
 
-    public function getStubsPath()
+    public function render($filePath, array $values = [])
     {
-        return realpath(path_join(__DIR__, 'resources/stubs'));
+        return $this->view
+            ->file($filePath)
+            ->with(array_replace_recursive($this->attributes, $values))
+            ->render();
+    }
+
+    protected function mkdir()
+    {
+        $this->fs->makeDirectory(path_join(func_get_args()), 0755, true);
+        return $this;
+    }
+
+    public function set($key, $value = null)
+    {
+        $this->offsetSet($key, $value);
+        return $this;
     }
 
     /**
-     * Get the value of destinationDirPath
+     * get to value
      *
-     * @return mixed
+     * @return string
      */
-    public function getDestinationDirPath()
+    public function getTo()
     {
-        return $this->destinationDirPath;
+        return $this->to;
     }
 
     /**
-     * Sets the value of destinationDirPath
+     * Set the to value
      *
-     * @param mixed $destinationDirPath
-     * @return mixed
+     * @param string $to
+     * @return Generator
      */
-    public function setDestinationDirPath($destinationDirPath)
+    public function to($to)
     {
-        $this->destinationDirPath = $destinationDirPath;
+        $this->to = $to;
 
         return $this;
     }
 
     /**
-     * Get the value of parser
+     * get from value
      *
-     * @return TemplateParser
+     * @return mixed
      */
-    public function getParser()
+    public function getFrom()
     {
-        return $this->parser;
+        return $this->from;
     }
 
     /**
-     * Sets the value of parser
+     * Set the from value
      *
-     * @param TemplateParser $parser
-     * @return TemplateParser
+     * @param mixed $from
+     * @return Generator
      */
-    public function setParser($parser)
+    public function from($from)
     {
-        $this->parser = $parser;
+        $this->from = $from;
 
         return $this;
     }
 
+    /**
+     * get attributes value
+     *
+     * @return array
+     */
+    public function getAttributes()
+    {
+        return $this->attributes;
+    }
 
 
 

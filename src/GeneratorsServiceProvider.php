@@ -11,6 +11,7 @@
 namespace Laradic\Generators;
 
 use Illuminate\Foundation\Application;
+use Illuminate\View\Engines\CompilerEngine;
 use Laradic\Config\Traits\ConfigProviderTrait;
 use Laradic\Support\ServiceProvider;
 
@@ -23,6 +24,13 @@ class GeneratorsServiceProvider extends ServiceProvider
 {
     use ConfigProviderTrait;
 
+    protected $providers = ['Laradic\Generators\Providers\ConsoleServiceProvider'];
+
+    public function provides()
+    {
+        return [ 'laradic.generator' ];
+    }
+
     public function boot()
     {
         /** @var \Illuminate\Foundation\Application $app */
@@ -32,16 +40,42 @@ class GeneratorsServiceProvider extends ServiceProvider
     public function register()
     {
         /** @var \Illuminate\Foundation\Application $app */
-        $app = parent::register();
-        $app->bind('laradic.generator', function (Application $app)
-        {
-            return new Generator($app->make('files'));
-        });
+        $app        = parent::register();
+        $config     = $this->addConfigComponent('laradic/generator', 'laradic/generator', realpath(__DIR__ . '/../resources/config'));
 
-        $this->addConfigComponent('laradic/generator', 'laradic/generator', realpath(__DIR__ . '/../resources/config'));
-        if ( $this->app->runningInConsole() )
+        $this->registerEngine();
+        $this->registerExtensions($config['extensions']);
+
+        $app->bind('Laradic\Generators\Generator', function (Application $app)
         {
-            $app->register('Laradic\Generators\Providers\ConsoleServiceProvider');
+            return new Generator($app->make('files'), $app->make('view'));
+        });
+        $app->bind('laradic.generator', 'Laradic\Generators\Generator');
+
+    }
+
+    protected function registerEngine()
+    {
+        /** @var \Illuminate\Foundation\Application $app */
+        $app      = $this->app;
+        $resolver = $app->make('view.engine.resolver');
+        $resolver->register('stub', function () use ($app)
+        {
+            $compiler = $app->make('blade.compiler');
+
+            return new CompilerEngine($compiler);
+        });
+        $app->make('view')->addExtension('stub', 'stub');
+    }
+
+    protected function registerExtensions($extensions)
+    {
+        /** @var \Illuminate\Foundation\Application $app */
+        $app  = $this->app;
+        $view = $app->make('view');
+        foreach ( $extensions as $ex )
+        {
+            $view->addExtension("$ex.stub", 'stub');
         }
     }
 }

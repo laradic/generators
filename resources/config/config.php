@@ -8,5 +8,5 @@
  * @link        http://radic.mit-license.org
  */
 return array(
-
+    'extensions' => ['php', 'yml', 'html', 'json', 'xml', 'md']
 );
