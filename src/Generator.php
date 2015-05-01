@@ -13,7 +13,7 @@ namespace Laradic\Generators;
 use Laradic\Support\Filesystem;
 use Illuminate\Contracts\View\Factory as View;
 use Laradic\Support\String;
-use Laradic\Support\Traits\DotArrayAccessTrait;
+use Laradic\Support\Traits\DotArrayAccess;
 
 /**
  * Class Generator
@@ -22,7 +22,7 @@ use Laradic\Support\Traits\DotArrayAccessTrait;
  */
 class Generator
 {
-    use DotArrayAccessTrait;
+    use DotArrayAccess;
 
     protected function getArrayAccessor()
     {
@@ -64,18 +64,6 @@ class Generator
 
     public function generate(array $files, array $values = [])
     {
-        $package = 'ewr';
-        $files2 = [
-            'composer.dev.json.stub'                    => 'composer.dev.json',
-            'composer.json.stub'                        => 'composer.json',
-            'gitignore.stub'                            => '.gitignore',
-            'phpunit.xml.stub'                          => 'phpunit.xml',
-            'travis.yml.stub'                           => 'travis.yml',
-            'resources/config/config.stub'              => false,
-            'src/Providers/ConsoleServiceProvider.stub' => 'ConsoleServiceProvider.php',
-            'src/PackageServiceProvider.stub'           => ucfirst($package) . 'ServiceProvider.php',
-            'src/Console/ListCommand.stub'              => ucfirst($package) . 'ListCommand.php'
-        ];
         foreach ( $files as $src => $fileName )
         {
             $segments    = explode('/', $src);

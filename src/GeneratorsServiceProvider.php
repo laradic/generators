@@ -24,12 +24,11 @@ class GeneratorsServiceProvider extends ServiceProvider
 {
     use ConfigProviderTrait;
 
-    protected $providers = ['Laradic\Generators\Providers\ConsoleServiceProvider'];
+    protected $providers = [ 'Laradic\Generators\Providers\ConsoleServiceProvider' ];
 
-    public function provides()
-    {
-        return [ 'laradic.generator' ];
-    }
+    protected $aliases = [ 'Generator' ];
+
+    protected $provides = [ 'laradic.generator' ];
 
     public function boot()
     {
@@ -40,18 +39,17 @@ class GeneratorsServiceProvider extends ServiceProvider
     public function register()
     {
         /** @var \Illuminate\Foundation\Application $app */
-        $app        = parent::register();
-        $config     = $this->addConfigComponent('laradic/generator', 'laradic/generator', realpath(__DIR__ . '/../resources/config'));
+        $app    = parent::register();
+        $config = $this->addConfigComponent('laradic/generator', 'laradic/generator', realpath(__DIR__ . '/../resources/config'));
 
         $this->registerEngine();
-        $this->registerExtensions($config['extensions']);
+        $this->registerExtensions($config[ 'extensions' ]);
 
         $app->bind('Laradic\Generators\Generator', function (Application $app)
         {
             return new Generator($app->make('files'), $app->make('view'));
         });
         $app->bind('laradic.generator', 'Laradic\Generators\Generator');
-
     }
 
     protected function registerEngine()
