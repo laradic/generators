@@ -1,0 +1,36 @@
+{
+    "name": "laradic/generators",
+    "description": "Code Generators",
+    "homepage": "https://radic.ninja",
+    "keywords": ["generator", "structure"],
+    "license": "MIT",
+    "authors": [
+        {"name": "Robin Radic", "homepage": "http://robin.radic.ninja", "email": "rradic@hotmail.com", "role": "Developer"}
+    ],
+    "require": {
+        "php": ">=7.1.0",
+        "illuminate/database": "^5.0|^6.0",
+        "illuminate/support": "^5.0|^6.0",
+        "doctrine/dbal": "^2.1"
+    },
+    "require-dev": {
+        "laradic/testing": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Laradic\\Generators\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Laradic\\Tests\\Generators\\": "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-develop": "2.1.x-dev"
+        },
+        "laravel": {
+        }
+    }
+}

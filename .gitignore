@@ -1,0 +1,10 @@
+vendor/
+composer.lock
+local.properties
+/node_modules
+/vendor
+.env
+.env.backup
+.phpunit.result.cache
+npm-debug.log
+yarn-error.log
