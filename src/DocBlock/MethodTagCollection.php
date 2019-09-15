@@ -5,6 +5,7 @@ namespace Laradic\Generators\DocBlock;
 use Barryvdh\Reflection\DocBlock\Tag\MethodTag;
 
 /**
+ * @method \Barryvdh\Reflection\DocBlock\Tag\MethodTag get($methodName)
  * @method \Barryvdh\Reflection\DocBlock\Tag\MethodTag[] all()
  */
 class MethodTagCollection extends TagCollection
@@ -19,6 +20,7 @@ class MethodTagCollection extends TagCollection
      */
     public function __construct(array $items = [])
     {
+        parent::__construct();
         foreach ($items as $item) {
             $this->add($item);
         }
@@ -32,5 +34,17 @@ class MethodTagCollection extends TagCollection
     {
         $this->put($tag->getMethodName(), $tag);
         return $this;
+    }
+
+    /**
+     * @param string|MethodTag $tagOrMethodName
+     * @return bool
+     */
+    public function has($tagOrMethodName)
+    {
+        if($tagOrMethodName instanceof MethodTag){
+            $tagOrMethodName = $tagOrMethodName->getMethodName();
+        }
+        return parent::has($tagOrMethodName);
     }
 }

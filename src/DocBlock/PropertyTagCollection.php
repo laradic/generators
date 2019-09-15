@@ -2,7 +2,10 @@
 
 namespace Laradic\Generators\DocBlock;
 
+use Barryvdh\Reflection\DocBlock\Tag\PropertyTag;
+
 /**
+ * @method \Barryvdh\Reflection\DocBlock\Tag\PropertyTag get($variableName)
  * @method \Barryvdh\Reflection\DocBlock\Tag\PropertyTag[] all()
  */
 class PropertyTagCollection extends TagCollection
@@ -17,6 +20,7 @@ class PropertyTagCollection extends TagCollection
      */
     public function __construct(array $items = [])
     {
+        parent::__construct();
         foreach ($items as $item) {
             $this->add($item);
         }
@@ -30,5 +34,17 @@ class PropertyTagCollection extends TagCollection
     {
         $this->put($tag->getVariableName(), $tag);
         return $this;
+    }
+
+    /**
+     * @param string|\Barryvdh\Reflection\DocBlock\Tag\PropertyTag $tagOrVariableName
+     * @return bool
+     */
+    public function has($tagOrVariableName)
+    {
+        if($tagOrVariableName instanceof PropertyTag){
+            $tagOrVariableName = $tagOrVariableName->getVariableName();
+        }
+        return parent::has($tagOrVariableName);
     }
 }

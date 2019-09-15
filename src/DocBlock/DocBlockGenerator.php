@@ -10,23 +10,18 @@ class DocBlockGenerator
     protected $classes = [];
     protected $methods = [];
 
+    /**
+     * @return \Laradic\Generators\DocBlock\Result[]|\Illuminate\Support\Collection
+     */
     public function process()
     {
         $classes   = $this->classes;
         $processed = [];
         while ( ! empty($classes)) {
             $class       = array_shift($classes);
-            $fileName        = $class->getReflection()->getFileName();
-            $className   = $class->getReflection()->getName();
-            $content     = $class->process();
-            $processed[] = compact('fileName', 'content', 'className', 'class');
+            $processed[] = $class->process();
         }
-        return $processed;
-    }
-
-    public function generate($flush = true)
-    {
-
+        return collect($processed);
     }
 
     public function class($class)
