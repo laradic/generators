@@ -14,7 +14,7 @@
         "doctrine/dbal": "^2.1"
     },
     "require-dev": {
-        "laradic/testing": "^2.0"
+        "laradic/testing": "^1.2"
     },
     "autoload": {
         "psr-4": {
