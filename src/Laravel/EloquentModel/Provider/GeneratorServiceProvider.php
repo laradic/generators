@@ -3,6 +3,7 @@
 namespace Laradic\Generators\Laravel\EloquentModel\Provider;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Contracts\Foundation\Application;
 use Laradic\Generators\Laravel\EloquentModel\EloquentElementBuilder;
 use Laradic\Generators\Laravel\EloquentModel\Processor\FieldProcessor;
 use Laradic\Generators\Laravel\EloquentModel\Processor\RelationProcessor;
@@ -15,6 +16,7 @@ use Laradic\Generators\Laravel\EloquentModel\Processor\ExistenceCheckerProcessor
 
 /**
  * Class GeneratorServiceProvider
+ *
  * @package Krlove\EloquentModelGenerator\Provider
  */
 class GeneratorServiceProvider extends ServiceProvider
@@ -26,10 +28,20 @@ class GeneratorServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->commands([
-            GenerateModelCommand::class,
-        ]);
+        $this->registerCommands();
+        $this->registerProcessors(self::PROCESSOR_TAG);
+        $this->registerBuilder(self::PROCESSOR_TAG);
+    }
 
+    protected function registerBuilder($tag)
+    {
+        $this->app->bind(EloquentElementBuilder::class, function (Application $app) use ($tag) {
+            return new EloquentElementBuilder($app->tagged($tag));
+        });
+    }
+
+    protected function registerProcessors($tag)
+    {
         $this->app->tag([
             ExistenceCheckerProcessor::class,
             FieldProcessor::class,
@@ -38,10 +50,13 @@ class GeneratorServiceProvider extends ServiceProvider
             CustomPropertyProcessor::class,
             TableNameProcessor::class,
             CustomPrimaryKeyProcessor::class,
-        ], self::PROCESSOR_TAG);
+        ], $tag);
+    }
 
-        $this->app->bind(EloquentElementBuilder::class, function ($app) {
-            return new EloquentElementBuilder($app->tagged(self::PROCESSOR_TAG));
-        });
+    protected function registerCommands()
+    {
+        $this->commands([
+            GenerateModelCommand::class,
+        ]);
     }
 }

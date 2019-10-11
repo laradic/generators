@@ -35,9 +35,9 @@ class ClassDoc extends ReflectionClass
 
     public function ensure(string $name, string $content)
     {
-        $tagLine                      = "@{$name} {$content}";
-        $tag                          = DocBlock\Tag::createInstance($tagLine);
-        $this->ensureTags[ $tagLine ] = $tag;
+        $tagLine                                 = "@{$name} {$content}";
+        $tag                                     = DocBlock\Tag::createInstance($tagLine);
+        $this->ensureTags[ 'lines' ][ $tagLine ] = $tag;
         return $tag;
     }
 
@@ -122,10 +122,15 @@ class ClassDoc extends ReflectionClass
         $tags       = $this->getTags();
         $methods    = $tags->methods();
         $properties = $tags->properties();
-        foreach (compact('methods', 'properties') as $name => $tags) {
+        $lines      = $tags->other();
+        foreach (compact('methods', 'properties', 'lines') as $name => $tags) {
             $ensureTags = $this->ensureTags[ $name ];
             foreach ($ensureTags as $ensureName => $ensureTag) {
-                if ( ! $tags->has($ensureName)) {
+                if ($name === 'lines') {
+                    if ( ! in_array($ensureName, $tags->values()->cast('string')->toArray(), true)) {
+                        $this->docBlock->appendTag($ensureTag);
+                    }
+                } elseif ( ! $tags->has($ensureName)) {
                     $this->docBlock->appendTag($ensureTag);
                 }
             }
@@ -134,8 +139,8 @@ class ClassDoc extends ReflectionClass
         $serializer = new DocBlockSerializer();
         $serializer->getDocComment($this->docBlock);
 
-        $docComment         = $serializer->getDocComment($this->docBlock);
-        return new Result($this, $docComment);
+        $docComment = $serializer->getDocComment($this->docBlock);
+        return new ProcessedClassDoc($this, $docComment);
     }
 
     public function getContent()
@@ -192,4 +197,8 @@ class ClassDoc extends ReflectionClass
         return $this->getName();
     }
 
+    public function getEnsureTags()
+    {
+        return $this->ensureTags;
+    }
 }

@@ -30,10 +30,21 @@ class TagCollection extends Collection
 
     public function properties()
     {
-        return new $this->methodTagCollectionClass(
+        return new $this->propertyTagCollectionClass(
             $this
                 ->filter(function ($item) {
                     return $item instanceof PropertyTag;
+                })
+                ->all()
+        );
+    }
+
+    public function other()
+    {
+        return static::make(
+            $this
+                ->filter(function ($item) {
+                    return ! $item instanceof PropertyTag && ! $item instanceof MethodTag;
                 })
                 ->all()
         );

@@ -19,7 +19,7 @@ class EloquentElementBuilder
 
     /**
      * EloquentElementBuilder constructor.
-     * @param ProcessorInterface[]|\IteratorAggregate $processors
+     * @param ProcessorInterface[]|\IteratorAggregate|array|iterable $processors
      */
     public function __construct($processors)
     {

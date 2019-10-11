@@ -10,6 +10,9 @@ use ReflectionProperty;
 use ReflectionParameter;
 use ReflectionClassConstant;
 use Laradic\Generators\Core\Elements\ClassElement;
+use function compact;
+use function collect;
+use function explode;
 
 class ReflectionClassConverter
 {

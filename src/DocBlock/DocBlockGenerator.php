@@ -10,8 +10,10 @@ class DocBlockGenerator
     protected $classes = [];
     protected $methods = [];
 
+    protected $classDocClass = ClassDoc::class;
+
     /**
-     * @return \Laradic\Generators\DocBlock\Result[]|\Illuminate\Support\Collection
+     * @return \Laradic\Generators\DocBlock\ProcessedClassDoc[]|\Illuminate\Support\Collection
      */
     public function process()
     {
@@ -27,24 +29,34 @@ class DocBlockGenerator
     public function class($class)
     {
         if ( ! $this->hasClass($class)) {
-            $this->newClass($class);
+            $this->addNewClass($class);
         }
         return $this->getClass($class);
     }
 
-    protected function newClass($class)
+    public function addNewClass($class)
     {
-        $class                   = $this->className($class);
-        $this->classes[ $class ] = new ClassDoc($class);
-        return $this->classes[ $class ];
+        return $this->addClass($this->newClass($class));
     }
 
-    protected function getClass($class)
+    public function addClass(ClassDoc $class)
+    {
+        $name                   = $this->className($class->getName());
+        $this->classes[ $name ] = $class;
+        return $this->classes[ $name ];
+    }
+
+    public function newClass($class)
+    {
+        return new $this->classDocClass($class);
+    }
+
+    public function getClass($class)
     {
         return $this->classes[ $this->className($class) ];
     }
 
-    protected function hasClass($class)
+    public function hasClass($class)
     {
         return array_key_exists($this->className($class), $this->classes);
     }
@@ -57,4 +69,11 @@ class DocBlockGenerator
         $class = Str::ensureLeft($class, '\\');
         return $class;
     }
+
+    public function setClassDocClass($classDocClass)
+    {
+        $this->classDocClass = $classDocClass;
+        return $this;
+    }
+
 }

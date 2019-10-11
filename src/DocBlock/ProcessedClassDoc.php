@@ -4,7 +4,7 @@
 namespace Laradic\Generators\DocBlock;
 
 
-class Result
+class ProcessedClassDoc
 {
     /** @var ClassDoc */
     protected $class;
@@ -28,6 +28,12 @@ class Result
         return $this->doc;
     }
 
+    public function setDoc($doc)
+    {
+        $this->doc = $doc;
+        return $this;
+    }
+
     public function content()
     {
 
@@ -36,7 +42,7 @@ class Result
         $filename           = $this->class->getFileName();
         $contents           = $this->class->getContent();
         /** @noinspection ClassMemberExistenceCheckInspection */
-        $type = method_exists($this, 'isInterface') && $this->class->isInterface() ? 'interface' : 'class';
+        $type = method_exists($this->class, 'isInterface') && $this->class->isInterface() ? 'interface' : 'class';
 
         if ($originalDocComment) {
             $contents = str_replace($originalDocComment, $this->doc, $contents);
