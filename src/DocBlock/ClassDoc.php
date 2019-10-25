@@ -182,6 +182,14 @@ class ClassDoc extends ReflectionClass
         return $this->docBlock;
     }
 
+    public function clearTagsByName($name)
+    {
+        foreach ($this->docBlock->getTagsByName('property') as $tag) {
+            $this->docBlock->deleteTag($tag);
+        }
+        return $this;
+    }
+
     public function getName()
     {
         return Str::ensureLeft(parent::getName(), '\\');
