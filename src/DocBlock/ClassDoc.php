@@ -184,7 +184,7 @@ class ClassDoc extends ReflectionClass
 
     public function clearTagsByName($name)
     {
-        foreach ($this->docBlock->getTagsByName('property') as $tag) {
+        foreach ($this->docBlock->getTagsByName($name) as $tag) {
             $this->docBlock->deleteTag($tag);
         }
         return $this;
