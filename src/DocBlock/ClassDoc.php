@@ -209,4 +209,11 @@ class ClassDoc extends ReflectionClass
     {
         return $this->ensureTags;
     }
+
+    public function is($class)
+    {
+        $class = is_object($class) ? get_class($class) : $class;
+        $class = Str::ensureLeft($class, '\\');
+        return $class === $this->getName();
+    }
 }

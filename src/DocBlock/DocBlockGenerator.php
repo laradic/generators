@@ -2,6 +2,7 @@
 
 namespace Laradic\Generators\DocBlock;
 
+use Closure;
 use Illuminate\Support\Str;
 
 class DocBlockGenerator
@@ -11,6 +12,8 @@ class DocBlockGenerator
     protected $methods = [];
 
     protected $classDocClass = ClassDoc::class;
+    /** @var array Closure[] */
+    protected $callbacks = [];
 
     /**
      * @return \Laradic\Generators\DocBlock\ProcessedClassDoc[]|\Illuminate\Support\Collection
@@ -20,10 +23,39 @@ class DocBlockGenerator
         $classes   = $this->classes;
         $processed = [];
         while ( ! empty($classes)) {
-            $class       = array_shift($classes);
-            $processed[] = $class->process();
+            $class = array_shift($classes);
+            if (array_key_exists($class->getName(), $this->callbacks)) {
+                $callback = $this->callbacks[ $class->getName() ];
+                $result   = $callback($class); // ProcessedClassDoc = add to processed, false = skip, otherwise process self
+                if ($result instanceof ProcessedClassDoc) {
+                    $processed[] = $result;
+                } elseif ($result !== false) {
+                    $processed[] = $class->process();
+                }
+            } else {
+                $processed[] = $class->process();
+            }
         }
         return collect($processed);
+    }
+
+    public function setClassDocClass($classDocClass)
+    {
+        $this->classDocClass = $classDocClass;
+        return $this;
+    }
+
+    /**
+     * @param          $class
+     * @param \Closure $cb is called with parameter of type ClassDoc. If return false: Skip. If return ProcessedClassDoc: add to processed. Return anything else: continue as normal
+     * @return $this
+     */
+    public function onClass($class, Closure $cb)
+    {
+        $class                     = is_object($class) ? get_class($class) : $class;
+        $class                     = Str::ensureLeft($class, '\\');
+        $this->callbacks[ $class ] = $cb;
+        return $this;
     }
 
     public function class($class)
@@ -68,12 +100,6 @@ class DocBlockGenerator
         }
         $class = Str::ensureLeft($class, '\\');
         return $class;
-    }
-
-    public function setClassDocClass($classDocClass)
-    {
-        $this->classDocClass = $classDocClass;
-        return $this;
     }
 
 }

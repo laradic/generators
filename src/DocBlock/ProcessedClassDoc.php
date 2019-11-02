@@ -34,7 +34,9 @@ class ProcessedClassDoc
         return $this;
     }
 
-    public function content()
+
+
+    public function content($clear = false)
     {
 
         $originalDocComment = $this->class->getDocComment();
@@ -43,6 +45,11 @@ class ProcessedClassDoc
         $contents           = $this->class->getContent();
         /** @noinspection ClassMemberExistenceCheckInspection */
         $type = method_exists($this->class, 'isInterface') && $this->class->isInterface() ? 'interface' : 'class';
+
+        if ($originalDocComment && $clear) {
+            $this->clearClassDoc($originalDocComment);
+            $originalDocComment = null;
+        }
 
         if ($originalDocComment) {
             $contents = str_replace($originalDocComment, $this->doc, $contents);
@@ -57,5 +64,10 @@ class ProcessedClassDoc
         return $contents;
     }
 
+    public function clearClassDoc(string $content)
+    {
+        $content= preg_replace('/\/\*\*[\w\W]*?\*\/[\s\t]*?\n[\s\t]*?(class|abstract|interface|trait)/','$1',$content);
+        return $content;
+    }
 
 }
