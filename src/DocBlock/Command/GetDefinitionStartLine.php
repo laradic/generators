@@ -49,7 +49,7 @@ class GetDefinitionStartLine
                 ->startAt($reflection->getStartLine() + 1)
                 ->upwards()
                 ->returnFirstMatch()
-                ->matchesExpression('/.*class ' . $reflection->getShortName() . '/')
+                ->matchesExpression('/.*(class|interface|trait).*' . $reflection->getShortName() . '/')
                 ->getResult();
         }
         $file->rewind();

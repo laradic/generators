@@ -45,7 +45,12 @@ class Definition
             //$docBlock =$this->docBlock;
 //            $this->clean->each->setDocBlock($docBlock);
             $this->clean->deleteFromDocblock($docBlock);
-            $missing = $this->ensure->filter(function (Tag $tag) {
+            $tags = $this->ensure->filter(function (Tag $tag) {
+                $typeTags = $this->ensure->type($tag);
+                TagUtil::resolveTagInnerName($tag);
+                return true;
+            });
+            $missing = $tags->filter(function (Tag $tag) {
                 return false === $this->hasTag($tag->getName(), $tag->getContent());
             });
             $missing->appendToDocblock($docBlock);
@@ -193,7 +198,7 @@ class Definition
         $this->resolveType($type);
         $tag = $this->ensureMethodTag();
         $this->callArgs($tag, compact('methodName', 'type', 'arguments', 'description'));
-        return $tag;
+        return $this;
     }
 
     protected function resolveType(&$type)
@@ -202,10 +207,13 @@ class Definition
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         $type = $type->map(function ($item) {
             if ($item instanceof ClassDefinition) {
-                return $item->getReflectionName(true);
+                $item= $item->getReflectionName(true);
             }
             if (is_object($item)) {
-                return Str::ensureLeft(get_class($item), '\\');
+                $item=get_class($item);
+            }
+            if(class_exists($item)){
+                $item= Str::ensureLeft($item,'\\');
             }
             return $item;
         });
@@ -303,5 +311,10 @@ class Definition
     public function getFilePathname()
     {
         return $this->getFile()->getPathname();
+    }
+
+    public function __toString()
+    {
+        return $this->getReflectionName(true);
     }
 }

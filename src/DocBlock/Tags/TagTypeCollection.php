@@ -1,7 +1,10 @@
-<?php
+<?php /** @noinspection OverridingDeprecatedMethodInspection */
+
+/** @noinspection CallableParameterUseCaseInTypeContextInspection */
 
 namespace Laradic\Generators\DocBlock\Tags;
 
+use BadMethodCallException;
 use Barryvdh\Reflection\DocBlock;
 use Illuminate\Support\Collection;
 use Barryvdh\Reflection\DocBlock\Tag;
@@ -9,8 +12,6 @@ use Barryvdh\Reflection\DocBlock\Tag;
 class TagTypeCollection extends Collection
 {
     protected $tagType = Tag::class;
-
-    protected $nameResolver = null;
 
     public function __construct($items = [])
     {
@@ -20,12 +21,9 @@ class TagTypeCollection extends Collection
         }
     }
 
-
-    public static function makeForTag($tagType, $nameResolver = null, $items = [])
+    public static function makeForTag($tagType, $items = [])
     {
-        return with(new static($items))
-            ->setTagType($tagType)
-            ->setNameResolver($nameResolver);
+        return with(new static($items))->setTagType($tagType);
     }
 
     public function deleteFromDocblock(DocBlock $docblock)
@@ -38,18 +36,13 @@ class TagTypeCollection extends Collection
         return $this->each([ $docblock, 'appendTag' ]);
     }
 
-    protected function hasNameResolver()
-    {
-        return $this->nameResolver !== null;
-    }
-
     protected function resolveName(Tag $tag)
     {
         if (method_exists($tag, 'getMethodName')) {
             return $tag->getMethodName();
         }
         if (method_exists($tag, 'getVariableName')) {
-            return $tag->getVariableName()();
+            return $tag->getVariableName();
         }
         return null;
     }
@@ -64,13 +57,6 @@ class TagTypeCollection extends Collection
         $this->tagType = TagUtil::resolveTagType($tagType);
         return $this;
     }
-
-    public function setNameResolver($nameResolver)
-    {
-        $this->nameResolver = $nameResolver;
-        return $this;
-    }
-
 
     /**
      * @param \Barryvdh\Reflection\DocBlock\Tag $tag
@@ -105,7 +91,7 @@ class TagTypeCollection extends Collection
      */
     public function push($value)
     {
-        throw new \BadMethodCallException('Use add() instead');
+        throw new BadMethodCallException('Use add() instead');
     }
 
     /**
@@ -113,7 +99,7 @@ class TagTypeCollection extends Collection
      */
     public function put($key, $value)
     {
-        throw new \BadMethodCallException('Use add() instead');
+        throw new BadMethodCallException('Use add() instead');
     }
 
 

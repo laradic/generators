@@ -31,15 +31,16 @@ class GenerateTempFiles
             }
             /** @var \SplTempFileObject $tempFile */
             $tempFile = $tempFiles->get($definition->getFile()->getPathname()); //->openFile('w');
-            $content  = $tempFile->fread($tempFile->fstat()[ 'size' ]);
+            $originalContent  = $tempFile->fread($tempFile->fstat()[ 'size' ]);
             if ($originalDocComment) {
-                $content = str_replace($originalDocComment, $processedDocComment, $content);
+                $content = str_replace($originalDocComment, $processedDocComment, $originalContent);
             } else {
                 $pos = $this->dispatchNow(new GetDefinitionStartLine($definition, $tempFile));
                 $tempFile->seek($pos);
                 $originalLine    = $tempFile->current();
                 $replacementLine = "{$processedDocComment}\n{$originalLine}";
-                $content         = substr_replace($content, $replacementLine, $pos, strlen($originalLine));
+                $content = str_replace($originalLine,$replacementLine,$originalContent);
+//                $content         = substr_replace($originalContent, $replacementLine, $tempFile->ftell(), strlen($originalLine));
             }
 
             $tempFile->ftruncate(0);
