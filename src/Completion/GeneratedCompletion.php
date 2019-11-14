@@ -4,15 +4,21 @@
 namespace Laradic\Generators\Completion;
 
 
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use Laradic\Generators\DocBlock\Command\GenerateTempFiles;
+use Laradic\Generators\DocBlock\Command\WriteTempFilesToSource;
+
 class GeneratedCompletion
 {
-    /** @var \Laradic\Generators\DocBlock\ProcessedClassDoc[] */
+    use DispatchesJobs;
+
+    /** @var \Laradic\Generators\DocBlock\Definition\ClassDefinition[] */
     protected $results;
 
     /**
      * GeneratedCompletion constructor.
      *
-     * @param \Laradic\Generators\DocBlock\ProcessedClassDoc[] $results
+     * @param \Laradic\Generators\DocBlock\ProcessedClassDefinition[] $results
      */
     public function __construct(array $results)
     {
@@ -20,7 +26,7 @@ class GeneratedCompletion
     }
 
     /**
-     * @return \Illuminate\Support\Collection|\Laradic\Generators\DocBlock\ProcessedClassDoc[]
+     * @return \Illuminate\Support\Collection|\Laradic\Generators\DocBlock\ProcessedClassDefinition[]
      */
     public function getResults()
     {
@@ -30,8 +36,9 @@ class GeneratedCompletion
     public function writeToSourceFiles()
     {
         foreach($this->results as $result){
-            $class = $result->getClass();
-            file_put_contents($class->getFileName(), $result->content());
+            /** @var \Illuminate\Support\Collection|\SplTempFileObject[] $tempFiles */
+            $tempFiles = $this->dispatchNow(new GenerateTempFiles($definitions = $result->collect()));
+            $this->dispatchNow(new WriteTempFilesToSource($definitions,$tempFiles));
         }
     }
 

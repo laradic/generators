@@ -4,15 +4,21 @@
 namespace Laradic\Generators\DocBlock;
 
 
-class ProcessedClassDoc
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use Laradic\Generators\DocBlock\Command\GenerateTempFiles;
+use Laradic\Generators\DocBlock\Definition\ClassDefinition;
+
+class ProcessedClassDefinition
 {
-    /** @var ClassDoc */
+    use DispatchesJobs;
+
+    /** @var ClassDefinition */
     protected $class;
 
     /** @var string */
     protected $doc;
 
-    public function __construct(ClassDoc $class, string $doc)
+    public function __construct(ClassDefinition $class, string $doc)
     {
         $this->class = $class;
         $this->doc   = $doc;
@@ -38,7 +44,16 @@ class ProcessedClassDoc
 
     public function content($clear = false)
     {
+        /** @var \Illuminate\Support\Collection|\SplTempFileObject[] $tempFiles */
+        $tempFiles = $this->dispatchNow(new GenerateTempFiles($this->class->collect()));
+        /** @var \SplTempFileObject $tempFile */
+        $tempFile = $tempFiles->get($this->class->getFilePathname());
+        $tempFile->rewind();
+        $contents = $tempFile->fread($tempFile->fstat()['size']);
+        $tempFile->rewind();
+        return $contents;
 
+        $tempFile = $tempFiles->first();
         $originalDocComment = $this->class->getDocComment();
         $classname          = $this->class->getShortName();
         $filename           = $this->class->getFileName();

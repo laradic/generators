@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use Barryvdh\Reflection\DocBlock;
 use Barryvdh\Reflection\DocBlock\Type\Collection;
+use Laradic\Generators\DocBlock\Tags\TagCollection;
 use Barryvdh\Reflection\DocBlock\Serializer as DocBlockSerializer;
 
 
@@ -14,6 +15,7 @@ class ClassDoc extends ReflectionClass
 {
     /** @var \phpDocumentor\Reflection\DocBlock */
     protected $docBlock;
+    protected $methods = [];
 
     public function __construct($className)
     {
@@ -32,6 +34,15 @@ class ClassDoc extends ReflectionClass
             // $propertyName => $propertyTag
         ],
     ];
+
+    public function getMethod($name)
+    {
+        if ( ! array_key_exists($name, $this->methods)) {
+            $this->methods[ $name ] = new MethodDoc($this->getName(), $name);
+        }
+        return $this->methods[ $name ];
+    }
+
 
     public function ensure(string $name, string $content)
     {
@@ -140,7 +151,7 @@ class ClassDoc extends ReflectionClass
         $serializer->getDocComment($this->docBlock);
 
         $docComment = $serializer->getDocComment($this->docBlock);
-        return new ProcessedClassDoc($this, $docComment);
+        return new ProcessedClassDefinition($this, $docComment);
     }
 
     public function getContent()
@@ -154,7 +165,7 @@ class ClassDoc extends ReflectionClass
     }
 
     /**
-     * @return \Laradic\Generators\DocBlock\TagCollection
+     * @return \Laradic\Generators\DocBlock\Tags\TagCollection
      */
     protected function getTags()
     {

@@ -3,6 +3,7 @@
 namespace Laradic\Generators\Completion;
 
 use Illuminate\Support\Str;
+use Illuminate\Support\Arr;
 use Laradic\Generators\DocBlock\DocBlockGenerator;
 
 class CollectionCompletion implements CompletionInterface
@@ -169,7 +170,7 @@ class CollectionCompletion implements CompletionInterface
         $class      = $generator->class($this->collection);
         $collection = Str::ensureLeft($this->collection, '\\');
         $item       = Str::ensureLeft($this->item, '\\');
-        $class->clearTagsByName('method');
+        $class->cleanTag('method');
         $methods = [
 //            [ 'sortBy', [ $collection, $item . '[]' ], null ],
 //            [ 'all', [ $item . '[]' ], null ],
@@ -182,13 +183,13 @@ class CollectionCompletion implements CompletionInterface
         foreach (static::$returnsItem as $name) {
             $methods[] = [ $name, [ $item ], null ];
         }
-        $_methods = collect($class->getMethods(\ReflectionMethod::IS_PUBLIC))->map->getName();
+        $_methods = collect($class->getReflection()->getMethods(\ReflectionMethod::IS_PUBLIC))->map->getName();
 
         foreach ($methods as $key => $method) {
             list($name, $types, $parameters) = $method;
             if ($parameters === null) {
-                if ($class->hasMethod($name)) {
-                    $parameters           = $this->getMethodParams($class->getMethod($name));
+                if ($class->getReflection()->hasMethod($name)) {
+                    $parameters           = $this->getMethodParams($class->getReflection()->getMethod($name));
                     $methods[ $key ][ 2 ] = $parameters;
                 }
             }
@@ -199,7 +200,9 @@ class CollectionCompletion implements CompletionInterface
             if (in_array($name, $this->exclude)) {
                 continue;
             }
-            $class->ensureMethod($name, $types, $parameters);
+            $types=Arr::wrap($types);
+            $types=implode('|',$types);
+            $class->ensureMethodTag('')->setMethodName($name)->setType($types)->setArguments($parameters);
         }
     }
 
