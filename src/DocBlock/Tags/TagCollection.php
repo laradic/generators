@@ -2,6 +2,7 @@
 
 namespace Laradic\Generators\DocBlock\Tags;
 
+use Illuminate\Support\Str;
 use Barryvdh\Reflection\DocBlock;
 use Illuminate\Support\Collection;
 use Barryvdh\Reflection\DocBlock\Tag;
@@ -17,20 +18,19 @@ class TagCollection extends Collection
     public function deleteFromDocblock(DocBlock $docblock)
     {
         $tags = static::make($docblock->getTags());
-        $tags = $this->map([$tags,'getMatching']);
+        $tags = $this->map([ $tags, 'getMatching' ]);
         $tags->each([ $docblock, 'deleteTag' ]);
-        return  $this;
+        return $this;
     }
 
     public function appendToDocblock(DocBlock $docblock)
     {
-//        $this->each->setDocBlock();
         return $this->each([ $docblock, 'appendTag' ]);
     }
 
     public function getMatching(Tag $matcher)
     {
-        return $this->first(function(Tag $tag) use ($matcher){
+        return $this->first(function (Tag $tag) use ($matcher) {
             return $tag->getName() == $matcher->getName() && $tag->getContent() === $matcher->getContent();
         });
     }
@@ -39,82 +39,106 @@ class TagCollection extends Collection
      * @param Tag|string $tag
      * @return \Laradic\Generators\DocBlock\Tags\TagTypeCollection
      */
-    public function type($tag)
+    public function collectTagType($tag)
     {
-        $type = TagUtil::resolveTagType($tag);
+        $type  = TagUtil::resolveTagType($tag);
         $items = $this->filter(function (Tag $item) use ($type) {
             return $item instanceof $type;
         })->all();
-        return TagTypeCollection::makeForTag($type, $items);
+        return TagTypeCollection::makeForType($type, $items);
+    }
+
+    /**
+     * Get the tag type names currently in the collection
+     *
+     * @return $this
+     */
+    public function getTagTypes()
+    {
+        return $this->map(function(Tag $tag){
+            return TagUtil::resolveTagType($tag);
+        })->unique();
+    }
+
+    public function mapToTagTypeCollections()
+    {
+        return $this->getTagTypes()->map(function ($type) {
+            return $this->collectTagType($type);
+        });
+    }
+
+    protected function callCollectTagType(string $tag)
+    {
+        return $this->collectTagType(Str::singular($tag));
     }
 
     public function methods()
     {
-        return $this->type('method');
+        return $this->callCollectTagType(__METHOD__);
     }
 
     public function params()
     {
-        return $this->type('param');
+        return $this->callCollectTagType(__METHOD__);
     }
 
     public function properties()
     {
-        return $this->type('property');
+        return $this->callCollectTagType(__METHOD__);
     }
 
     public function vars()
     {
-        return $this->type('var');
+        return $this->callCollectTagType(__METHOD__);
     }
 
     public function covers()
     {
-        return $this->type('covers');
+        return $this->callCollectTagType(__METHOD__);
     }
 
     public function deprecates()
     {
-        return $this->type('deprecated');
+        return $this->callCollectTagType(__METHOD__);
     }
 
     public function examples()
     {
-        return $this->type('example');
+        return $this->callCollectTagType(__METHOD__);
     }
 
     public function links()
     {
-        return $this->type('link');
+        return $this->callCollectTagType(__METHOD__);
     }
 
     public function returns()
     {
-        return $this->type('return');
+        return $this->callCollectTagType(__METHOD__);
     }
 
     public function sees()
     {
-        return $this->type('see');
+        return $this->callCollectTagType(__METHOD__);
     }
 
     public function since()
     {
-        return $this->type('since');
+        return $this->callCollectTagType(__METHOD__);
     }
 
     public function sources()
     {
-        return $this->type('source');
+        return $this->callCollectTagType(__METHOD__);
     }
 
     public function throws()
     {
-        return $this->type('throws');
+        return $this->callCollectTagType(__METHOD__);
     }
 
     public function uses()
     {
-        return $this->type('use');
+        return $this->callCollectTagType(__METHOD__);
     }
 }

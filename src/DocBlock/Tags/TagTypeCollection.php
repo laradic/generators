@@ -21,7 +21,7 @@ class TagTypeCollection extends Collection
         }
     }
 
-    public static function makeForTag($tagType, $items = [])
+    public static function makeForType($tagType, $items = [])
     {
         return with(new static($items))->setTagType($tagType);
     }
@@ -36,14 +36,31 @@ class TagTypeCollection extends Collection
         return $this->each([ $docblock, 'appendTag' ]);
     }
 
+    public function hasNamed($name)
+    {
+        if($this->isNamed()){
+            return $this->has($name);
+        }
+        return false;
+    }
+
+    public function isNamed()
+    {
+        return $this->named;
+    }
+
+    protected $named = false;
+
     protected function resolveName(Tag $tag)
     {
+        $this->named=true;
         if (method_exists($tag, 'getMethodName')) {
             return $tag->getMethodName();
         }
         if (method_exists($tag, 'getVariableName')) {
             return $tag->getVariableName();
         }
+        $this->named=false;
         return null;
     }
 

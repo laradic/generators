@@ -42,17 +42,16 @@ class Definition
     {
         if ( ! $this->processed && ! $force) {
             $docBlock = new DocBlock($this->reflection, $this->docBlock->getContext(), $this->location);
-            //$docBlock =$this->docBlock;
-//            $this->clean->each->setDocBlock($docBlock);
             $this->clean->deleteFromDocblock($docBlock);
-            $tags = $this->ensure->filter(function (Tag $tag) {
-                $typeTags = $this->ensure->type($tag);
-                TagUtil::resolveTagInnerName($tag);
-                return true;
-            });
-            $missing = $tags->filter(function (Tag $tag) {
+
+            // removes tags with matching property and innerName (like methodName)
+            $ensureTags = $this->ensure->mapToTagTypeCollections()->flatten(0);
+            $currentTags = $this->getTags()->mapToTagTypeCollections()->flatten(0);
+
+            $missing = $ensureTags->filter(function (Tag $tag) use ($currentTags){
                 return false === $this->hasTag($tag->getName(), $tag->getContent());
             });
+
             $missing->appendToDocblock($docBlock);
             $serializer = new DocBlockSerializer();
             $serializer->getDocComment($docBlock);
@@ -101,10 +100,11 @@ class Definition
      * @param string $content
      * @param bool   $force
      * @return $this
-     *@see \Laradic\Generators\DocBlock\Definition\Definition::ensureTag()
+     * @see \Laradic\Generators\DocBlock\Definition\Definition::ensureTag()
      */
-    public function ensure($tag_line, $content = '', bool $force = false){
-        $this->ensureTag($tag_line,$content,$force);
+    public function ensure($tag_line, $content = '', bool $force = false)
+    {
+        $this->ensureTag($tag_line, $content, $force);
         return $this;
     }
 
@@ -175,6 +175,14 @@ class Definition
         return $this->ensureTag('property', $content, $force);
     }
 
+    public function ensureProperty(string $variableName, $type = '', $description = null)
+    {
+        $this->resolveType($type);
+        $tag = $this->ensurePropertyTag();
+        $this->callArgs($tag, compact('variableName', 'type', 'description'));
+        return $this;
+    }
+
     /** @return Tag\VarTag */
     public function ensureVarTag(string $content = '', bool $force = false)
     {
@@ -207,13 +215,13 @@ class Definition
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         $type = $type->map(function ($item) {
             if ($item instanceof ClassDefinition) {
-                $item= $item->getReflectionName(true);
+                $item = $item->getReflectionName(true);
             }
             if (is_object($item)) {
-                $item=get_class($item);
+                $item = get_class($item);
             }
-            if(class_exists($item)){
-                $item= Str::ensureLeft($item,'\\');
+            if (class_exists($item)) {
+                $item = Str::ensureLeft($item, '\\');
             }
             return $item;
         });
@@ -240,11 +248,6 @@ class Definition
         return $this->ensure;
     }
 
-    public function getContent()
-    {
-        return file_get_contents($this->getReflectionFileName());
-    }
-
     public function getFile()
     {
         return new \SplFileInfo($this->getReflectionFileName());
@@ -263,17 +266,6 @@ class Definition
     public function getDocBlock()
     {
         return $this->docBlock;
-    }
-
-    public function getLocation()
-    {
-        return $this->location;
-    }
-
-    public function setLocation(Location $location)
-    {
-        $this->location = $location;
-        return $this;
     }
 
     public function getReflection()
@@ -317,4 +309,21 @@ class Definition
     {
         return $this->getReflectionName(true);
     }
+
+
+//    public function getContent()
+//    {
+//        return file_get_contents($this->getReflectionFileName());
+//    }
+//    public function getLocation()
+//    {
+//        return $this->location;
+//    }
+//
+//    public function setLocation(Location $location)
+//    {
+//        $this->location = $location;
+//        return $this;
+//    }
+
 }

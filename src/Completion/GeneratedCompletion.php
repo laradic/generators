@@ -55,16 +55,13 @@ class GeneratedCompletion
     public function combineForCompletionFile()
     {
         $lines = ['<?php'];
-        foreach ($this->results as $result) {
-            $class   = $result->getClass();
-            $lines[] = "namespace {$class->getNamespaceName()} {";
-            $lines[] = $result->getDoc();
-            $lines[] = "class {$class->getShortName()}{}";
+        foreach ($this->results as $class) {
+            $lines[] = "namespace {$class->getReflectionNamespaceName()} {";
+            $lines[] = $class->getDocComment();
+            $lines[] = "class {$class->getReflectionShortName()}{}";
             $lines[] = '}';
         }
-
         return implode(PHP_EOL, $lines);
-
     }
 
     public function writeToCompletionFile($path)

@@ -52,31 +52,6 @@ class ProcessedClassDefinition
         $contents = $tempFile->fread($tempFile->fstat()['size']);
         $tempFile->rewind();
         return $contents;
-
-        $tempFile = $tempFiles->first();
-        $originalDocComment = $this->class->getDocComment();
-        $classname          = $this->class->getShortName();
-        $filename           = $this->class->getFileName();
-        $contents           = $this->class->getContent();
-        /** @noinspection ClassMemberExistenceCheckInspection */
-        $type = method_exists($this->class, 'isInterface') && $this->class->isInterface() ? 'interface' : 'class';
-
-        if ($originalDocComment && $clear) {
-            $this->clearClassDoc($originalDocComment);
-            $originalDocComment = null;
-        }
-
-        if ($originalDocComment) {
-            $contents = str_replace($originalDocComment, $this->doc, $contents);
-        } else {
-            $needle  = "{$type} {$classname}";
-            $replace = "{$this->doc}\n{$type} {$classname}";
-            $pos     = strpos($contents, $needle);
-            if ($pos !== false) {
-                $contents = substr_replace($contents, $replace, $pos, strlen($needle));
-            }
-        }
-        return $contents;
     }
 
     public function clearClassDoc(string $content)
