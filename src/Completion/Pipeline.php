@@ -29,7 +29,7 @@ class Pipeline extends \Illuminate\Pipeline\Pipeline
     /**
      * Run the pipeline and return the result.
      *
-     * @return mixed
+     * @return \Laradic\Generators\DocBlock\DocBlockGenerator
      */
     public function thenReturn()
     {
@@ -88,10 +88,11 @@ class Pipeline extends \Illuminate\Pipeline\Pipeline
                     $parameters = [$passable, $bcstack];
                 }
 
+                $this->runCallbacks($this->beforeCallbacks, $pipe);
                 method_exists($pipe, $this->method)
                     ? $pipe->{$this->method}(...$parameters)
                     : $pipe(...$parameters);
-
+                $this->runCallbacks($this->afterCallbacks, $pipe);
                 $response = $stack($passable);
 
                 return $response instanceof Responsable
@@ -107,6 +108,27 @@ class Pipeline extends \Illuminate\Pipeline\Pipeline
 //                    : $response;
             };
         };
+    }
+
+    /**
+     * @param Closure[] $callbacks
+     * @return void
+     */
+    public function runCallbacks($callbacks, ...$params)
+    {
+        foreach($callbacks as $callback){
+            $callback(...$params);
+        }
+    }
+    protected $beforeCallbacks = [];
+    public function beforePipe(Closure $callback)
+    {
+        $this->beforeCallbacks[] =$callback;
+    }
+    protected $afterCallbacks = [];
+    public function afterPipe(Closure $callback)
+    {
+        $this->afterCallbacks[] =$callback;
     }
 
 }

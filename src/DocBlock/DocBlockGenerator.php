@@ -28,6 +28,7 @@ class DocBlockGenerator
             $class = array_shift($classes);
             $class->collect()->process();
             $processed[] =$class;
+            $class->getReflectionName();
 //            if (array_key_exists($class->getReflectionName(), $this->callbacks)) {
 //                $callback = $this->callbacks[ $class->getReflectionName() ];
 //                $result   = $callback($class); // ProcessedClassDoc = add to processed, false = skip, otherwise process self

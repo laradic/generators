@@ -8,7 +8,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Laradic\Generators\DocBlock\Command\GenerateTempFiles;
 use Laradic\Generators\DocBlock\Command\WriteTempFilesToSource;
 
-class GeneratedCompletion
+class ProcessedCompletions
 {
     use DispatchesJobs;
 
