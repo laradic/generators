@@ -4,6 +4,7 @@ namespace Laradic\Generators\Completion;
 
 use Closure;
 use Illuminate\Http\Request;
+use Laradic\Support\MultiBench;
 use Illuminate\Contracts\Support\Responsable;
 
 class Pipeline extends \Illuminate\Pipeline\Pipeline
@@ -88,11 +89,13 @@ class Pipeline extends \Illuminate\Pipeline\Pipeline
                     $parameters = [$passable, $bcstack];
                 }
 
+                MultiBench::on('completions')->mark('start: '.get_class($pipe));
                 $this->runCallbacks($this->beforeCallbacks, $pipe);
                 method_exists($pipe, $this->method)
                     ? $pipe->{$this->method}(...$parameters)
                     : $pipe(...$parameters);
                 $this->runCallbacks($this->afterCallbacks, $pipe);
+                MultiBench::on('completions')->mark('end: '.get_class($pipe));
                 $response = $stack($passable);
 
                 return $response instanceof Responsable

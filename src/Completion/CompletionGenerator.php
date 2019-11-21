@@ -4,6 +4,7 @@
 namespace Laradic\Generators\Completion;
 
 use Illuminate\Support\Arr;
+use Laradic\Support\MultiBench;
 use Laradic\Generators\DocBlock\DocBlockGenerator;
 
 class CompletionGenerator
@@ -20,13 +21,16 @@ class CompletionGenerator
 
     public function generate()
     {
+        MultiBench::on('completions')->mark('generate');
         $result = $this->pipeline
             ->send($this->createDocblockGenerator())
             ->through($this->pipes)
             ->via('generate')
             ->thenReturn();
-
-        return new ProcessedCompletions($result->process()->all());
+        MultiBench::on('completions')->mark('generated')->mark('process');
+        $result = $result->process()->all();
+        MultiBench::on('completions')->mark('processed');
+        return new ProcessedCompletions($result);
     }
 
     protected function createDocblockGenerator()
