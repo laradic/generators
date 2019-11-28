@@ -40,10 +40,13 @@ class ClassDefinition extends Definition
         return $this;
     }
 
-    public function properties(array $properties)
+    public function properties(array $properties, $clean=false)
     {
         foreach ($properties as $name => $params) {
-            $this->property($name)->cleanAllTags()->ensureTag($params[ 0 ], $params[ 1 ]);
+            if($clean){
+                $this->property($name)->cleanAllTags();
+            }
+            $this->property($name)->ensureTag($params[ 0 ], $params[ 1 ]);
         }
         return $this;
     }
