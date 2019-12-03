@@ -32,10 +32,13 @@ class ClassDefinition extends Definition
         return $definition;
     }
 
-    public function methods(array $methods)
+    public function methods(array $methods, $clean = false)
     {
         foreach ($methods as $name => $params) {
-            $this->method($name)->cleanAllTags()->ensureTag($params[ 0 ], $params[ 1 ]);
+            if($clean) {
+                $this->method($name)->cleanAllTags();
+            }
+            $this->method($name)->ensureTag($params[ 0 ], $params[ 1 ]);
         }
         return $this;
     }
