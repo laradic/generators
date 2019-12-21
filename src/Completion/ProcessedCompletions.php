@@ -18,7 +18,7 @@ class ProcessedCompletions
     /**
      * GeneratedCompletion constructor.
      *
-     * @param \Laradic\Generators\DocBlock\ProcessedClassDefinition[] $results
+     * @param \Laradic\Generators\DocBlock\Definition\ClassDefinition[] $results
      */
     public function __construct(array $results)
     {
@@ -45,8 +45,7 @@ class ProcessedCompletions
     public function cleanSourceFiles()
     {
         foreach($this->results as $result){
-            $class = $result->getClass();
-            file_put_contents($class->getFileName(), $result->clearClassDoc($result->content()));
+            file_put_contents($result->getReflectionFileName(), $result->clearClassDoc($result->content()));
         }
 
     }

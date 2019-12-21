@@ -4,7 +4,7 @@ namespace Laradic\Generators\DocBlock\Definition;
 
 use Reflector;
 use Illuminate\Support\Str;
-use Barryvdh\Reflection\DocBlock;
+use Laradic\Generators\DocBlock\DocBlock;
 use Illuminate\Support\Collection;
 use Barryvdh\Reflection\DocBlock\Tag;
 use Barryvdh\Reflection\DocBlock\Location;
@@ -44,12 +44,17 @@ class Definition
             $docBlock = new DocBlock($this->reflection, $this->docBlock->getContext(), $this->location);
             $this->clean->deleteFromDocblock($docBlock);
 
+            $currentTags = $this->getTags()->mapToTagTypeCollections()->flatten(0);
             // removes tags with matching property and innerName (like methodName)
             $ensureTags = $this->ensure->mapToTagTypeCollections()->flatten(0);
-            $currentTags = $this->getTags()->mapToTagTypeCollections()->flatten(0);
 
-            $missing = $ensureTags->filter(function (Tag $tag) use ($currentTags){
-                return false === $this->hasTag($tag->getName(), $tag->getContent());
+            $missing = $ensureTags->filter(function (Tag $tag) use ($docBlock){
+                return false === TagCollection::make($docBlock->getTagsByName($tag->getName()))
+                    ->map->getContent()
+                    ->filter(function ($tagContent) use ($tag) {
+                        return Str::contains($tagContent, $tag->getContent());
+                    })
+                    ->isNotEmpty();
             });
 
             $missing->appendToDocblock($docBlock);
@@ -84,7 +89,14 @@ class Definition
     {
         $this->resolveType($content); // provide BC
         $tag_line = TagUtil::resolveTagLine($tag_line);
-        $tag      = Tag::createInstance($tag_line, null, new Location())->setContent($content);
+        if(!Str::startsWith($content, $tag_line)){
+            $content = $tag_line.' '.$content;
+        }
+        $tag      = Tag::createInstance($content, null, new Location())->setContent($content);
+        $content = $tag->getContent();
+        $left=Str::ensureLeft($tag->getName(),'@');
+        $content = Str::removeLeft($content, $left);
+        $tag->setContent($content);
         $this->ensure->add($tag);
         if ($force) {
             $innerName = TagUtil::resolveTagInnerName($tag);

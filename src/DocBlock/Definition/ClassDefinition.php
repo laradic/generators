@@ -22,13 +22,23 @@ class ClassDefinition extends Definition
 
     public function method($name)
     {
-        $this->collection->push($definition = $this->builder->method($this, $name));
+        $definition = $this->collection->filter(function(Definition $definition) use ($name){
+            return $definition->getReflection()->getName() === $name;
+        })->first();
+        if(!$definition) {
+            $this->collection->push($definition = $this->builder->method($this, $name));
+        }
         return $definition;
     }
 
     public function property($name)
     {
-        $this->collection->push($definition = $this->builder->property($this, $name));
+        $definition = $this->collection->filter(function(Definition $definition) use ($name){
+            return $definition->getReflection()->getName() === $name;
+        })->first();
+        if(!$definition) {
+            $this->collection->push($definition = $this->builder->property($this, $name));
+        }
         return $definition;
     }
 
