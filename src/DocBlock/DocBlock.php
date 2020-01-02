@@ -2,11 +2,21 @@
 
 namespace Laradic\Generators\DocBlock;
 
+use Barryvdh\Reflection\DocBlock\Context;
+use Barryvdh\Reflection\DocBlock\Location;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Str;
 use Barryvdh\Reflection\DocBlock\Tag;
+use Laradic\Generators\DocBlock\Tags\MixinTag;
 
-class DocBlock extends \Barryvdh\Reflection\DocBlock
+class DocBlock extends \Barryvdh\Reflection\DocBlock implements Arrayable
 {
+    public function __construct($docblock, Context $context = null, Location $location = null)
+    {
+        Tag::registerTagHandler('mixin',MixinTag::class);
+        parent::__construct($docblock, $context, $location);
+    }
+
     protected function parseTags($tags)
     {
         parent::parseTags($tags);
@@ -40,5 +50,18 @@ class DocBlock extends \Barryvdh\Reflection\DocBlock
         return parent::appendTag($tag);
     }
 
+    /**
+     * Get the instance as an array.
+     *
+     * @return array
+     */
+    public function toArray()
+    {
 
+        return [
+            'short_description' => $this->short_description,
+            'long_description' => $this->getLongDescription()->getContents(),
+            'tags' => []
+        ];
+    }
 }

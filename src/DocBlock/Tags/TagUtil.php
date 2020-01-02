@@ -15,6 +15,9 @@ class TagUtil
         if (method_exists($tag, 'getVariableName')) {
             return $tag->getVariableName();
         }
+        if (method_exists($tag, 'getReference')) {
+            return $tag->getReference();
+        }
         return null;
     }
     public static function resolveTagName($tag)

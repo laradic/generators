@@ -9,6 +9,7 @@ use Illuminate\Support\Collection;
 use Barryvdh\Reflection\DocBlock\Tag;
 use Barryvdh\Reflection\DocBlock\Location;
 use Laradic\Generators\DocBlock\Tags\TagUtil;
+use Laradic\Generators\DocBlock\Tags\MixinTag;
 use Laradic\Generators\DocBlock\Tags\TagCollection;
 use Barryvdh\Reflection\DocBlock\Serializer as DocBlockSerializer;
 
@@ -128,6 +129,7 @@ class Definition
     public function cleanTag($tag_line, $innerName = null)
     {
         $tagName = TagUtil::resolveTagName($tag_line);
+
         foreach ($this->docBlock->getTagsByName($tagName) as $tag) {
             if ($innerName !== null) {
                 if ($innerName === TagUtil::resolveTagInnerName($tag)) {
@@ -205,6 +207,11 @@ class Definition
     public function ensureReturnTag(string $content = '', bool $force = false)
     {
         return $this->ensureTag('return', $content, $force);
+    }
+    /** @return MixinTag */
+    public function ensureMixinTag(string $references = '', bool $force = false)
+    {
+        return $this->ensureTag('mixin', $references, $force);
     }
 
     /** @return Tag\ParamTag */

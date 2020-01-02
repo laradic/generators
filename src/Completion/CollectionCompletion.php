@@ -212,7 +212,7 @@ class CollectionCompletion implements CompletionInterface
         foreach ($method->getParameters() as $param) {
             $parameter = [];
             if ($param->hasType()) {
-                $parameter[] = (string)$param->getType();
+                $parameter[] = $param->getType()->getName();
             }
             $parameter[] = '$' . $param->getName();
             $isAvailable = $param->isDefaultValueAvailable();
