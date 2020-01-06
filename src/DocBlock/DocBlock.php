@@ -33,12 +33,14 @@ class DocBlock extends \Barryvdh\Reflection\DocBlock implements Arrayable
 
     public function appendTag(Tag $tag)
     {
-        $this->tags = array_filter($this->tags, function (Tag $t) use ($tag) {
+        $tagClass = new \ReflectionClass(get_class($tag));
+        $this->tags = array_filter($this->tags, function (Tag $t) use ($tag,$tagClass) {
+            $tClass = new \ReflectionClass(get_class($t));
             $falses = [
-                $t instanceof Tag\MethodTag && $tag instanceof Tag\MethodTag && $t->getMethodName() === $tag->getMethodName(),
-                $t instanceof Tag\ParamTag && $tag instanceof Tag\ParamTag && $t->getVariableName() === $tag->getVariableName(),
-                $t instanceof Tag\ReturnTag && $tag instanceof Tag\ReturnTag && !$t instanceof Tag\MethodTag && !$tag instanceof Tag\MethodTag,
-                $t instanceof Tag\VarTag && $tag instanceof Tag\VarTag,
+                $tClass->getName() === Tag\MethodTag::class && $tagClass->getName() ===  Tag\MethodTag::class && $t->getMethodName() === $tag->getMethodName(),
+                $tClass->getName() === Tag\ParamTag::class && $tagClass->getName() ===  Tag\ParamTag::class && $t->getVariableName() === $tag->getVariableName(),
+                $tClass->getName() === Tag\ReturnTag::class && $tagClass->getName() ===  Tag\ReturnTag::class && !$t instanceof Tag\MethodTag && !$tag instanceof Tag\MethodTag,
+                $tClass->getName() === Tag\VarTag::class && $tagClass->getName() ===  Tag\VarTag::class,
             ];
             foreach ($falses as $false) {
                 if ($false === true) {

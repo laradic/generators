@@ -23,7 +23,7 @@ class RegistrarSignature implements Arrayable, ArrayAccess
     protected $index;
     protected $method;
 
-    protected function getArrayableProperties()
+    protected function getArrayablePropertyKeys()
     {
         return [ 'function', 'type', 'class', 'field', 'array', 'index', 'method' ];
     }
@@ -31,7 +31,7 @@ class RegistrarSignature implements Arrayable, ArrayAccess
     public function clone()
     {
         $clone = new static();
-        foreach ($this->getArrayableProperties() as $field) {
+        foreach ($this->getArrayablePropertyKeys() as $field) {
             $clone[ $field ] = $this[ $field ];
         }
         return $clone;
@@ -39,7 +39,7 @@ class RegistrarSignature implements Arrayable, ArrayAccess
 
     public function reset()
     {
-        foreach ($this->getArrayableProperties() as $field) {
+        foreach ($this->getArrayablePropertyKeys() as $field) {
             $clone[ $field ] = null;
         }
         return $this;
@@ -64,7 +64,7 @@ class RegistrarSignature implements Arrayable, ArrayAccess
      */
     public function set($data)
     {
-        foreach (Arr::only($data, $this->getArrayableProperties()) as $field => $value) {
+        foreach (Arr::only($data, $this->getArrayablePropertyKeys()) as $field => $value) {
             $this[ $field ] = $value;
         }
         return $this;

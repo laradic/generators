@@ -25,7 +25,10 @@ class TagCollection extends Collection
 
     public function appendToDocblock(DocBlock $docblock)
     {
-        return $this->each([ $docblock, 'appendTag' ]);
+        foreach($this->items as $item){
+            $docblock->appendTag($item);
+        }
+        return $this;
     }
 
     public function getMatching(Tag $matcher)
