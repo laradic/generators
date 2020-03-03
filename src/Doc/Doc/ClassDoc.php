@@ -166,9 +166,9 @@ class ClassDoc extends BaseDoc
     /** @var \SplTempFileObject */
     protected $temporaryFile;
 
-    public function getTemporaryFile()
+    public function getTemporaryFile($fresh = false)
     {
-        if ($this->temporaryFile === null) {
+        if ($this->temporaryFile === null || $fresh) {
             $content             = file_get_contents($this->getFile()->getPathname());
             $this->temporaryFile = new \SplTempFileObject();
             $this->temporaryFile->fwrite($content);

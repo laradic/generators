@@ -2,6 +2,7 @@
 
 namespace Laradic\Generators\Doc;
 
+use Closure;
 use Illuminate\Support\Arr;
 use Illuminate\Contracts\Container\Container;
 
@@ -49,6 +50,10 @@ class DocChainExecutor
     protected function callChainItems()
     {
         foreach ($this->chain as $item) {
+            if ($item instanceof Closure) {
+                $this->container->call($item, [ 'registry' => $this->registry ]);
+                continue;
+            }
             if (is_string($item)) {
                 $item = $this->container->make($item);
             }
