@@ -63,6 +63,14 @@ class ClassElement extends Element
             $lines[] = $this->renderArrayLn($this->uses->all());
         }
         if ($this->docBlock !== null) {
+            $content = [];
+            foreach ($this->properties->virtual() as $property) {
+                $content[] = $property->toLines();
+            }
+            foreach ($this->methods->virtual() as $method) {
+                $content[] = $method->toLines();
+            }
+            $this->docBlock->addContent($content);
             $lines[] = $this->docBlock->render();
         }
         $lines [] = $this->name->render();
@@ -74,10 +82,10 @@ class ClassElement extends Element
             $lines[] = $this->constants->render(4, PHP_EOL, PHP_EOL);
         }
         if ($this->properties->isNotEmpty()) {
-            $lines[] = $this->properties->render(4, PHP_EOL, PHP_EOL);
+            $lines[] = $this->properties->real()->render(4, PHP_EOL, PHP_EOL);
         }
         if ($this->methods->isNotEmpty()) {
-            $lines[] = $this->methods->render(4, PHP_EOL, PHP_EOL);
+            $lines[] = $this->methods->real()->render(4, PHP_EOL, PHP_EOL);
         }
 
         $lines[] = $this->ln('}');
@@ -138,10 +146,28 @@ class ClassElement extends Element
         return $method;
     }
 
+    public function addDocblockMethod($method, $type = null)
+    {
+        if ( ! $method instanceof VirtualMethodElement) {
+            $method = new VirtualMethodElement($method, $type);
+        }
+        $this->methods->put($method->getName(), $method);
+        return $method;
+    }
+
     public function addProperty($property, $access = 'public', $default = null)
     {
         if ( ! $property instanceof PropertyElement) {
             $property = new PropertyElement($property, $access, $default);
+        }
+        $this->properties->put($property->getName(), $property);
+        return $property;
+    }
+
+    public function addDocblockProperty($property, $type = null)
+    {
+        if ( ! $property instanceof VirtualPropertyElement) {
+            $property = new VirtualPropertyElement($property, $type);
         }
         $this->properties->put($property->getName(), $property);
         return $property;

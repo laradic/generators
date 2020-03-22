@@ -8,6 +8,7 @@ use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
 use ReflectionParameter;
+use Illuminate\Support\Str;
 use ReflectionClassConstant;
 use Laradic\Generators\Core\Elements\ClassElement;
 use function compact;
@@ -25,48 +26,79 @@ class ReflectionClassConverter
         $this->class      = new ClassElement();
     }
 
+    public function handle()
+    {
+        return $this->convert();
+    }
+
     public function convert()
     {
-        $ref        = $this->reflection;
-        $class      = $this->class;
-        $interfaces = collect($ref->getInterfaces());
+        $ref   = $this->reflection;
+        $class = $this->class;
 
-
-        $class->setName($ref->getShortName(), $ref->getParentClass(), $this->getInterfaceShortNames());
-        $interfaces->each(function (ReflectionClass $interface) {
+        $class->setName($ref->getShortName(), null, $this->getInterfaceShortNames());
+        if ($parent = $ref->getParentClass()) {
+            $class->addUse($parent->getName());
+            $class->getName()->setExtends($parent->getShortName());
+        }
+        collect($this->getInterfaces())->each(function (ReflectionClass $interface) {
             $this->class->addUse($interface->getName());
         });
         $class->setNamespace($ref->getNamespaceName());
+        $filterByDeclaringClass = function (\Reflector $ref) {
+            if ( ! method_exists($ref, 'getDeclaringClass')) {
+                return true;
+            }
+            return $this->reflection->getName() === $ref->getDeclaringClass()->getName();
+        };
 
-        $constants  = collect($ref->getReflectionConstants())->map(function (ReflectionClassConstant $ref) {
+        $constants = collect($ref->getReflectionConstants())->filter($filterByDeclaringClass)->map(function (ReflectionClassConstant $ref) {
             return $this->class->addConstant($ref->getName(), $ref->getValue());
         });
-        $traits     = collect($ref->getTraits())->map(function (ReflectionClass $ref) {
+        $traits    = collect($ref->getTraits())->map(function (ReflectionClass $ref) {
             $this->class->addUse($ref->getName());
             return $this->class->addUseTrait($ref->getShortName());
         });
-        $methods    = collect($ref->getMethods())->map(function (ReflectionMethod $ref) {
-            $value = $this->class->addMethod($ref->getName());
-            $value->setAccess($this->getAccess($ref));
-            $value->setStatic($ref->isStatic());
-            $value->setAbstract($ref->isAbstract());
-            $value->setFinal($ref->isFinal());
-            $value->setBody($body = $this->getMethodBody($ref));
-            $docComment = explode("\n", static::cleanInput($ref->getDocComment()));
-            $value->setDocBlock($docComment);
-            collect($ref->getParameters())->each(function (ReflectionParameter $ref) use ($value) {
-                $value->addArgument($ref->getName(), $ref->getType(), $this->getParameterDefault($ref));
+
+        $methods    = collect($ref->getMethods())
+            ->filter($filterByDeclaringClass)
+            ->filter(function(ReflectionMethod $ref){
+                // filter out methods from traits
+                $names = collect($this->reflection->getTraits())->map->getMethods()->flatten(1)->map->getName();
+                return $names->contains($ref->getName()) === false;
+            })
+            ->map(function (ReflectionMethod $ref) {
+
+                $method = $this->class->addMethod($ref->getName());
+                $method->setAccess($this->getAccess($ref));
+                $method->setStatic($ref->isStatic());
+                $method->setAbstract($ref->isAbstract());
+                $method->setFinal($ref->isFinal());
+                $method->setBody($body = $this->getMethodBody($ref));
+                $docComment = explode("\n", static::cleanInput($ref->getDocComment()));
+                $method->setDocBlock($docComment);
+                collect($ref->getParameters())->each(function (ReflectionParameter $ref) use ($method) {
+                    $method->addArgument($ref->getName(), $ref->getType(), $this->getParameterDefault($ref));
+                });
+                $arguments = $method->getArguments();
+                return $method;
             });
-            $arguments = $value->getArguments();
-            return $value;
-        });
-        $properties = collect($ref->getProperties())->map(function (ReflectionProperty $ref) {
-            $value      = $this->class->addProperty($ref->getName(), $this->getAccess($ref));
-            $docComment = explode("\n", static::cleanInput($ref->getDocComment()));
-            $value->setDocBlock($docComment);
-            $value->setStatic($ref->isStatic());
-            return $value;
-        });
+        $properties = collect($ref->getProperties())
+            ->filter($filterByDeclaringClass)
+            ->filter(function(ReflectionProperty $ref){
+                // filter out properties from traits
+                $names = collect($this->reflection->getTraits())->map->getProperties()->flatten(1)->map->getName();
+                return $names->contains($ref->getName()) === false;
+            })
+            ->map(function (ReflectionProperty $ref) {
+
+                $property      = $this->class->addProperty($ref->getName(), $this->getAccess($ref));
+                $docComment = explode("\n", static::cleanInput($ref->getDocComment()));
+                $property->setDocBlock($docComment);
+                $property->setStatic($ref->isStatic());
+                $property->setValue(data_get($this->reflection->getDefaultProperties(), $ref->getName(), null));
+                return $property;
+            });
         $data       = collect(compact('traits', 'constants', 'methods', 'properties'));
         $arr        = $data->toArray();
 
@@ -141,11 +173,27 @@ class ReflectionClassConverter
         return 'private';
     }
 
+    protected function getInterfaces()
+    {
+        $interfaces = $this->reflection->getInterfaces();
+        if ($parent = $this->reflection->getParentClass()) {
+            foreach ($parent->getInterfaceNames() as $name) {
+                unset($interfaces[ $name ]);
+            }
+        };
+        return $interfaces;
+    }
+
     protected function getInterfaceShortNames()
     {
         $shortNames = [];
-        foreach ($this->reflection->getInterfaces() as $name => $ref) {
-            $shortNames[] = $ref->getShortName();
+
+        foreach ($this->getInterfaces() as $name => $ref) {
+            if(in_array($ref->getShortName(), $shortNames, true)){
+                $shortNames[] = Str::ensureLeft($ref->getName(), '\\');
+            } else {
+                $shortNames[] = $ref->getShortName();
+            }
         }
         return $shortNames;
     }
