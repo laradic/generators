@@ -173,6 +173,36 @@ class ClassElement extends Element
         return $property;
     }
 
+    public function setExtends($name, $ifClassAddToUse = true)
+    {
+        $shortName = $name;
+        if (class_exists($name) && $ifClassAddToUse) {
+            $this->addUse($name);
+            $shortName = (new \ReflectionClass($name))->getShortName();
+        }
+        $this->getName()->setExtends($shortName);
+    }
+
+    public function addImplement($name, $ifClassAddToUse = true)
+    {
+        $shortName = $name;
+        if (class_exists($name) && $ifClassAddToUse) {
+            $this->addUse($name);
+            $shortName = (new \ReflectionClass($name))->getShortName();
+        }
+        $this->getName()->addImplements($shortName );
+    }
+
+    public function addTrait($name, $ifClassAddToUse = true)
+    {
+        $shortName = $name;
+        if (class_exists($name) && $ifClassAddToUse) {
+            $this->addUse($name);
+            $shortName = (new \ReflectionClass($name))->getShortName();
+        }
+        $this->addUseTrait([ $shortName ]);
+    }
+
 
     public function getName()
     {
@@ -181,7 +211,7 @@ class ClassElement extends Element
 
     public function getUses()
     {
-        return $this->uses;
+        return $this->uses->keyBy->getUse();
     }
 
     public function getNamespace()
@@ -191,22 +221,22 @@ class ClassElement extends Element
 
     public function getTraits()
     {
-        return $this->traits;
+        return $this->traits->keyBy->getName();
     }
 
     public function getConstants()
     {
-        return $this->constants;
+        return $this->constants->keyBy->getName();
     }
 
     public function getProperties()
     {
-        return $this->properties;
+        return $this->properties->keyBy->getName();
     }
 
     public function getMethods()
     {
-        return $this->methods;
+        return $this->methods->keyBy->getName();
     }
 
 

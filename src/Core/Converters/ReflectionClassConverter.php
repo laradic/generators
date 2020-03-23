@@ -36,6 +36,14 @@ class ReflectionClassConverter
         $ref   = $this->reflection;
         $class = $this->class;
 
+//        $class->setName($ref->getShortName());
+//        if ($parent = $ref->getParentClass()) {
+//            $class->setExtends($parent->getName());
+//        }
+//
+//        foreach($this->getInterfaces() as $interface){
+//            $class->addImplement($interface->getName());
+//        }
         $class->setName($ref->getShortName(), null, $this->getInterfaceShortNames());
         if ($parent = $ref->getParentClass()) {
             $class->addUse($parent->getName());
