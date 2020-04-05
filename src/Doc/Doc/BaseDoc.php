@@ -72,4 +72,23 @@ abstract class BaseDoc implements Doc
         });
         return $type = $type->implode('|');
     }
+
+    protected function resolveArguments(&$arguments)
+    {
+        $args = array_map('trim',explode(',', $arguments));
+        foreach($args as &$arg){
+            $argWithType = array_map('trim',explode(' ', $arg));
+            if(count($argWithType) === 1){
+                continue;
+            }
+            $type = head($argWithType);
+            if($type === $arg){
+                continue;
+            }
+            $this->resolveType($type);
+            $argWithType[0] = $type;
+            $arg = implode(' ', $argWithType);
+        }
+        return $arguments = implode(', ', $args);
+    }
 }

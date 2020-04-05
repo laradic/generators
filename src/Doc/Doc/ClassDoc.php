@@ -126,14 +126,15 @@ class ClassDoc extends BaseDoc
     /**
      * @param string          $name
      * @param string|string[] $types
-     * @param string          $arguments
+     * @param string|string[]          $arguments
      * @param bool            $isStatic
      *
      * @return \Barryvdh\Reflection\DocBlock\Tag\MethodTag
      */
-    public function ensureAndReturnMethodTag($name, $types, string $arguments = '', bool $isStatic = false)
+    public function ensureAndReturnMethodTag($name, $types, $arguments = '', bool $isStatic = false)
     {
         $this->resolveType($types);
+        $this->resolveArguments($arguments);
         $this->docblock->getMethodTags()->whereMethodName($name)->deleteFrom($this->docblock);
         $types  = implode('|', Arr::wrap($types));
         $static = $isStatic ? 'static ' : '';
