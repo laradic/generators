@@ -2,6 +2,8 @@
 
 namespace Laradic\Generators\Core\Traits;
 
+use Illuminate\Support\Arr;
+
 trait ValueTrait
 {
     /**
@@ -58,6 +60,11 @@ trait ValueTrait
 
                 break;
             case 'array':
+                if(Arr::isAssoc($value)){
+
+                    $value = var_export($value,true);
+                    break;
+                }
                 $parts = [];
                 foreach ($value as $item) {
                     $parts[] = $this->renderTyped($item);
