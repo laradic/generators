@@ -4,6 +4,7 @@ namespace Laradic\Generators\Doc;
 
 use Closure;
 use Illuminate\Support\Arr;
+use Illuminate\Events\Dispatcher;
 use Illuminate\Contracts\Container\Container;
 
 class DocChainExecutor
@@ -21,12 +22,17 @@ class DocChainExecutor
     protected $container;
 
     protected $isTransformed;
+    /**
+     * @var \Illuminate\Events\Dispatcher
+     */
+    protected $dispatcher;
 
     public function __construct(DocRegistry $registry, DocSerializer $serializer, Container $container)
     {
         $this->registry   = $registry;
         $this->serializer = $serializer;
         $this->container  = $container;
+        $this->dispatcher = new Dispatcher();
     }
 
     public function run()
@@ -57,8 +63,15 @@ class DocChainExecutor
             if (is_string($item)) {
                 $item = $this->container->make($item);
             }
+            $this->dispatcher->dispatch('call', [$item]);
             $this->container->call([ $item, 'handle' ], [ 'registry' => $this->registry ]);
         }
+    }
+
+    public function on($event, \Closure $listener)
+    {
+        $this->dispatcher->listen($event, $listener);
+        return $this;
     }
 
     //region: Getter & Setters

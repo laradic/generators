@@ -21,13 +21,16 @@ class MethodDoc extends BaseDoc
 
     protected static $methods = [];
 
+    /** @noinspection MagicMethodsValidityInspection */
     protected function __construct(ClassDoc $classDoc, string $methodName)
     {
         $this->classDoc   = $classDoc;
         $this->className  = $classDoc->getClassName();
         $this->methodName = $methodName;
         $this->reflection = new ReflectionMethod($this->className, $methodName);
-        $this->docblock   = new DocBlock($this->reflection);
+
+        $this->docblock= new DocBlock($this->reflection);
+        $this->docblock->setDoc($this);
     }
 
     public static function make(ClassDoc $classDoc, string $methodName)

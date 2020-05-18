@@ -2,11 +2,11 @@
 
 namespace Laradic\Generators\Doc\Doc;
 
-use Barryvdh\Reflection\DocBlock\Tag;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
-use Laradic\Generators\Doc\DocBlock;
 use ReflectionClass;
+use Illuminate\Support\Str;
+use Illuminate\Support\Arr;
+use Laradic\Generators\Doc\DocBlock;
+use Barryvdh\Reflection\DocBlock\Tag;
 
 /**
  * @method ReflectionClass getReflection()
@@ -22,11 +22,12 @@ class ClassDoc extends BaseDoc
     /** @var \Laradic\Generators\Doc\Doc\MethodDoc[] */
     protected $methods = [];
 
+    /** @noinspection MagicMethodsValidityInspection */
     public function __construct(string $className)
     {
         $this->className  = $className;
         $this->reflection = new ReflectionClass($className);
-        $this->docblock   = new DocBlock($this->reflection);
+        $this->docblock   = $this->makeDocBlock();
     }
 
     public static function make(string $className)
@@ -77,7 +78,6 @@ class ClassDoc extends BaseDoc
     /**
      * @param string          $name
      * @param string|string[] $types
-     *
      * @return \Laradic\Generators\DocBlock\Tags\MixinTag
      */
     public function ensureAndReturnMixinTag($reference, $deleteOtherMixins = false)
@@ -103,7 +103,6 @@ class ClassDoc extends BaseDoc
     /**
      * @param string          $name
      * @param string|string[] $types
-     *
      * @return \Barryvdh\Reflection\DocBlock\Tag\PropertyTag
      */
     public function ensureAndReturnPropertyTag($name, $types)
@@ -126,37 +125,43 @@ class ClassDoc extends BaseDoc
     /**
      * @param string          $name
      * @param string|string[] $types
-     * @param string|string[]          $arguments
+     * @param string|string[] $arguments
      * @param bool            $isStatic
-     *
      * @return \Barryvdh\Reflection\DocBlock\Tag\MethodTag
      */
-    public function ensureAndReturnMethodTag($name, $types, $arguments = '', bool $isStatic = false)
+    public function ensureAndReturnMethodTag($name, $types, $arguments = '', bool $isStatic = false, $description = null)
     {
+        if(is_string($types)){
+            $types = explode('|',$types);
+        }
         $this->resolveType($types);
         $this->resolveArguments($arguments);
         $this->docblock->getMethodTags()->whereMethodName($name)->deleteFrom($this->docblock);
         $types  = implode('|', Arr::wrap($types));
         $static = $isStatic ? 'static ' : '';
         $tag    = Tag::createInstance("@method {$static}{$types} {$name}({$arguments})");
+        if ($description !== null) {
+            $tag->setDescription($description);
+        }
         $this->docblock->appendTag($tag);
         return $tag;
     }
 
-    public function ensureAndReturnStaticMethodTag($name, $types, string $arguments = '')
+    public function ensureAndReturnStaticMethodTag($name, $types, string $arguments = '', $description = null)
     {
-        return $this->ensureAndReturnMethodTag($name, $types, $arguments, true);
+        return $this->ensureAndReturnMethodTag($name, $types, $arguments, true, $description);
     }
 
-    public function ensureMethod($name, $types, string $arguments = '', bool $isStatic = false)
+    public function ensureMethod($name, $types, string $arguments = '', $description = null)
     {
-        $this->ensureAndReturnMethodTag($name, $types, $arguments, $isStatic);
+        $this->ensureAndReturnMethodTag($name, $types, $arguments, false, $description);
         return $this;
     }
 
-    public function ensureStaticMethod($name, $types, string $arguments = '')
+    public function ensureStaticMethod($name, $types, string $arguments = '', $description = null)
     {
-        return $this->ensureMethod($name, $types, $arguments);
+        $this->ensureAndReturnStaticMethodTag($name, $types, $arguments, $description);
+        return $this;
     }
 
     public function getFile()

@@ -2,10 +2,10 @@
 
 namespace Laradic\Generators\Doc\Doc;
 
-use Barryvdh\Reflection\DocBlock\Tag;
+use ReflectionProperty;
 use Illuminate\Support\Arr;
 use Laradic\Generators\Doc\DocBlock;
-use ReflectionProperty;
+use Barryvdh\Reflection\DocBlock\Tag;
 
 /**
  * @method ReflectionProperty getReflection()
@@ -15,23 +15,26 @@ class PropertyDoc extends BaseDoc
     /** @var string */
     protected $propertyName;
 
-   /** @var ClassDoc */
+    /** @var ClassDoc */
     protected $classDoc;
 
     protected static $properties = [];
 
+    /** @noinspection MagicMethodsValidityInspection */
     protected function __construct(ClassDoc $classDoc, string $propertyName)
     {
-        $this->classDoc   = $classDoc;
-        $this->className  = $classDoc->getClassName();
+        $this->classDoc     = $classDoc;
+        $this->className    = $classDoc->getClassName();
         $this->propertyName = $propertyName;
-        $this->reflection = new ReflectionProperty($this->className, $propertyName);
-        $this->docblock   = new DocBlock($this->reflection);
+        $this->reflection   = new ReflectionProperty($this->className, $propertyName);
+
+        $this->docblock= new DocBlock($this->reflection);
+        $this->docblock->setDoc($this);
     }
 
     public static function make(ClassDoc $classDoc, string $propertyName)
     {
-        $fqns = $classDoc->getClassName() . '::$' . $propertyName ;
+        $fqns = $classDoc->getClassName() . '::$' . $propertyName;
         if ( ! array_key_exists($fqns, static::$properties)) {
             static::$properties[ $fqns ] = new static($classDoc, $propertyName);
         }
@@ -41,7 +44,6 @@ class PropertyDoc extends BaseDoc
     /**
      * @param        $types
      * @param string $description
-     *
      * @return \Barryvdh\Reflection\DocBlock\Tag\VarTag
      */
     public function ensureAndReturnVarTag($types, $description = '')
@@ -59,6 +61,7 @@ class PropertyDoc extends BaseDoc
         $this->ensureAndReturnVarTag($types, $description);
         return $this;
     }
+
 
     public function getPropertyName()
     {

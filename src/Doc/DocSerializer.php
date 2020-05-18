@@ -28,6 +28,12 @@ class DocSerializer
         $this->events = new Dispatcher();
     }
 
+    public function on($event, $listener)
+    {
+        $this->events->listen($event,$listener);
+        return $this;
+    }
+
     public function transform($classes)
     {
         $classes = Arr::wrap($classes);
