@@ -5,7 +5,6 @@ namespace Laradic\Generators\Doc\Doc;
 use ReflectionClass;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
-use Laradic\Generators\Doc\DocBlock;
 use Barryvdh\Reflection\DocBlock\Tag;
 
 /**
@@ -103,22 +102,26 @@ class ClassDoc extends BaseDoc
     /**
      * @param string          $name
      * @param string|string[] $types
+     * @param null            $description
      * @return \Barryvdh\Reflection\DocBlock\Tag\PropertyTag
      */
-    public function ensureAndReturnPropertyTag($name, $types)
+    public function ensureAndReturnPropertyTag($name, $types, $description = null)
     {
         $this->resolveType($types);
         $name = Str::ensureLeft($name, '$');
         $this->docblock->getPropertyTags()->whereVariableName($name)->deleteFrom($this->docblock);
         $types = implode('|', Arr::wrap($types));
         $tag   = Tag::createInstance("@property {$types} {$name}");
+        if ($description !== null) {
+            $tag->setDescription($description);
+        }
         $this->docblock->appendTag($tag);
         return $tag;
     }
 
-    public function ensureProperty($name, $types)
+    public function ensureProperty($name, $types, $description = null)
     {
-        $this->ensureAndReturnPropertyTag($name, $types);
+        $this->ensureAndReturnPropertyTag($name, $types, $description);
         return $this;
     }
 
@@ -131,8 +134,8 @@ class ClassDoc extends BaseDoc
      */
     public function ensureAndReturnMethodTag($name, $types, $arguments = '', bool $isStatic = false, $description = null)
     {
-        if(is_string($types)){
-            $types = explode('|',$types);
+        if (is_string($types)) {
+            $types = explode('|', $types);
         }
         $this->resolveType($types);
         $this->resolveArguments($arguments);
