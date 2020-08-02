@@ -4,7 +4,6 @@
 
 namespace Laradic\Generators\DocBlock\Tags;
 
-use BadMethodCallException;
 use Barryvdh\Reflection\DocBlock;
 use Illuminate\Support\Collection;
 use Barryvdh\Reflection\DocBlock\Tag;
@@ -38,7 +37,7 @@ class TagTypeCollection extends Collection
 
     public function hasNamed($name)
     {
-        if($this->isNamed()){
+        if ($this->isNamed()) {
             return $this->has($name);
         }
         return false;
@@ -53,14 +52,14 @@ class TagTypeCollection extends Collection
 
     protected function resolveName(Tag $tag)
     {
-        $this->named=true;
+        $this->named = true;
         if (method_exists($tag, 'getMethodName')) {
             return $tag->getMethodName();
         }
         if (method_exists($tag, 'getVariableName')) {
             return $tag->getVariableName();
         }
-        $this->named=false;
+        $this->named = false;
         return null;
     }
 
@@ -101,22 +100,6 @@ class TagTypeCollection extends Collection
             }
         }
         return parent::has($tagOrVariableName);
-    }
-
-    /**
-     * @deprecated use add()
-     */
-    public function push($value)
-    {
-        throw new BadMethodCallException('Use add() instead');
-    }
-
-    /**
-     * @deprecated use add()
-     */
-    public function put($key, $value)
-    {
-        throw new BadMethodCallException('Use add() instead');
     }
 
 
