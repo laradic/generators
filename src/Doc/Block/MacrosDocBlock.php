@@ -27,9 +27,13 @@ class MacrosDocBlock
     {
 
 
-        $ref = new \ReflectionClass($this->class);
+        $ref              = new \ReflectionClass($this->class);
+        $staticProperties = $ref->getStaticProperties();
+        if ( ! isset($staticProperties[ 'macros' ])) {
+            return;
+        }
         /** @var \ReflectionFunction[] $macros */
-        $macros = collect($ref->getStaticProperties()[ 'macros' ])->cast(\ReflectionFunction::class);
+        $macros = collect($staticProperties[ 'macros' ])->cast(\ReflectionFunction::class);
         foreach ($macros as $name => $macro) {
             $tag = new MethodTag('method', '');
             $tag->setMethodName($name);
