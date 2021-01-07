@@ -5,15 +5,13 @@
     "keywords": ["generator", "structure"],
     "license": "MIT",
     "authors": [
-        {"name": "Robin Radic", "homepage": "https://radic.dev", "email": "rradic@hotmail.com", "role": "Developer"}
+        {"name": "Robin Radic", "homepage": "http://robin.radic.ninja", "email": "rradic@hotmail.com", "role": "Developer"}
     ],
     "require": {
         "php": ">=7.1.0",
         "illuminate/database": "^5.0|^6.0|^7.0|^8.0",
         "illuminate/support": "^5.0|^6.0|^7.0|^8.0",
-        "barryvdh/reflection-docblock": "~2.0",
-        "doctrine/inflector": "^2.0",
-        "doctrine/dbal": "^2.1|^3.0"
+        "doctrine/dbal": "^2.1"
     },
     "require-dev": {
         "laradic/testing": "^1.2"
