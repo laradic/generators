@@ -5,7 +5,7 @@
     "keywords": ["generator", "structure"],
     "license": "MIT",
     "authors": [
-        {"name": "Robin Radic", "homepage": "http://robin.radic.ninja", "email": "rradic@hotmail.com", "role": "Developer"}
+        {"name": "Robin Radic", "homepage": "https://radic.dev", "email": "rradic@hotmail.com", "role": "Developer"}
     ],
     "require": {
         "php": ">=7.1.0",
