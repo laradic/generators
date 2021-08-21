@@ -2,6 +2,9 @@
 
 namespace Laradic\Generators\Doc\Block;
 
+use ReflectionParameter;
+use ReflectionUnionType;
+use ReflectionNamedType;
 use Illuminate\Support\Str;
 use Barryvdh\Reflection\DocBlock;
 use Laradic\Generators\Doc\DocRegistry;
@@ -64,7 +67,7 @@ class CollectionMacrosDocBlock
             }
             $arguments = array_map(function (\ReflectionParameter $param) {
                 $arg = '';
-                if ($param->isCallable()) {
+                if ($this->isCallable($param)) {
                     $arg .= 'callable ';
                 } elseif ($type = $param->getType()) {
                     $arg .= (string)$type . ' ';
@@ -92,5 +95,19 @@ class CollectionMacrosDocBlock
                 $class->ensureSeeTag('\\' . $closureScopeClass->getName());
             }
         }
+    }
+
+
+    protected function isCallable(ReflectionParameter $reflectionParameter): bool
+    {
+        $reflectionType = $reflectionParameter->getType();
+
+        if (!$reflectionType) return false;
+
+        $types = $reflectionType instanceof ReflectionUnionType
+            ? $reflectionType->getTypes()
+            : [$reflectionType];
+
+        return in_array('callable', array_map(fn(ReflectionNamedType $t) => $t->getName(), $types));
     }
 }
