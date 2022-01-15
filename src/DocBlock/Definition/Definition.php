@@ -51,11 +51,11 @@ class Definition
 
             $missing = $ensureTags->filter(function (Tag $tag) use ($docBlock){
                 return false === TagCollection::make($docBlock->getTagsByName($tag->getName()))
-                    ->map->getContent()
-                    ->filter(function ($tagContent) use ($tag) {
-                        return Str::contains($tagContent, $tag->getContent());
-                    })
-                    ->isNotEmpty();
+                        ->map->getContent()
+                        ->filter(function ($tagContent) use ($tag) {
+                            return Str::contains($tagContent, $tag->getContent());
+                        })
+                        ->isNotEmpty();
             });
 
             $missing->appendToDocblock($docBlock);
@@ -88,7 +88,7 @@ class Definition
      */
     public function ensureTag($tag_line, $content = '', bool $force = false)
     {
-        $this->resolveType($content); // provide BC
+        static::resolveType($content); // provide BC
         $tag_line = TagUtil::resolveTagLine($tag_line);
         if(!Str::startsWith($content, $tag_line)){
             $content = $tag_line.' '.$content;
@@ -191,7 +191,7 @@ class Definition
 
     public function ensureProperty(string $variableName, $type = '', $description = null)
     {
-        $this->resolveType($type);
+        static::resolveType($type);
         $tag = $this->ensurePropertyTag();
         $this->callArgs($tag, compact('variableName', 'type', 'description'));
         return $this;
@@ -222,14 +222,14 @@ class Definition
 
     public function ensureMethod(string $methodName, $type = '', string $arguments = null, string $description = null)
     {
-        $this->resolveType($type);
+        static::resolveType($type);
         $tag = $this->ensureMethodTag();
         $this->callArgs($tag, compact('methodName', 'type', 'arguments', 'description'));
         return $this;
     }
 
-    protected function resolveType(&$type)
-    {
+    public static function resolveType($type){
+
         $type = Collection::wrap($type);
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         $type = $type->map(function ($item) {

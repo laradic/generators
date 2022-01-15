@@ -2,6 +2,9 @@
 
 namespace Laradic\Generators\Doc\Block;
 
+use ReflectionParameter;
+use ReflectionUnionType;
+use ReflectionNamedType;
 use Barryvdh\Reflection\DocBlock;
 use Laradic\Generators\Doc\DocRegistry;
 use Barryvdh\Reflection\DocBlock\Tag\SeeTag;
@@ -57,7 +60,7 @@ class MacrosDocBlock
             }
             $arguments = array_map(function (\ReflectionParameter $param) {
                 $arg = '';
-                if ($param->isCallable()) {
+                if ($this->isCallable($param)) {
                     $arg .= 'callable ';
                 } elseif ($type = $param->getType()) {
                     $arg .= (string)$type . ' ';
@@ -86,5 +89,19 @@ class MacrosDocBlock
                 $classDoc->ensureSeeTag('\\' . $closureScopeClass->getName());
             }
         }
+    }
+
+
+    protected function isCallable(ReflectionParameter $reflectionParameter): bool
+    {
+        $reflectionType = $reflectionParameter->getType();
+
+        if (!$reflectionType) return false;
+
+        $types = $reflectionType instanceof ReflectionUnionType
+            ? $reflectionType->getTypes()
+            : [$reflectionType];
+
+        return in_array('callable', array_map(fn(ReflectionNamedType $t) => $t->getName(), $types));
     }
 }
