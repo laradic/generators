@@ -3,7 +3,7 @@
 namespace Laradic\Generators\Doc\Collection;
 
 use Illuminate\Support\Str;
-use Laradic\Generators\DocBlock\Tags\MixinTag;
+use Laradic\Generators\Doc\Tags\MixinTag;
 
 class MixinTagCollection extends BaseTagCollection
 {

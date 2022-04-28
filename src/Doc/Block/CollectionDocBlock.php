@@ -5,7 +5,6 @@ namespace Laradic\Generators\Doc\Block;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use Laradic\Generators\Doc\DocRegistry;
-use Laradic\Generators\DocBlock\DocBlockGenerator;
 
 class CollectionDocBlock
 {

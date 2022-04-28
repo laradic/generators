@@ -41,7 +41,7 @@ class CollectionMacrosDocBlock
             $tag->setMethodName($name);
 
             if ($macro->hasReturnType()) {
-                $tag->setType((string)$macro->getReturnType());
+                $tag->setType($macro->getReturnType()->getName());
             } else {
                 $tag->setType('mixed');
             }
@@ -70,7 +70,7 @@ class CollectionMacrosDocBlock
                 if ($this->isCallable($param)) {
                     $arg .= 'callable ';
                 } elseif ($type = $param->getType()) {
-                    $arg .= (string)$type . ' ';
+                    $arg .= $type->getName() . ' ';
                 }
                 if ($param->isVariadic()) {
                     $arg .= '...';

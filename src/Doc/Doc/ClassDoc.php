@@ -2,10 +2,10 @@
 
 namespace Laradic\Generators\Doc\Doc;
 
-use ReflectionClass;
-use Illuminate\Support\Str;
-use Illuminate\Support\Arr;
 use Barryvdh\Reflection\DocBlock\Tag;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
+use ReflectionClass;
 
 /**
  * @method ReflectionClass getReflection()
@@ -77,7 +77,7 @@ class ClassDoc extends BaseDoc
     /**
      * @param string          $name
      * @param string|string[] $types
-     * @return \Laradic\Generators\DocBlock\Tags\MixinTag
+     * @return \Laradic\Generators\Doc\Tags\MixinTag
      */
     public function ensureAndReturnMixinTag($reference, $deleteOtherMixins = false)
     {
@@ -199,6 +199,7 @@ class ClassDoc extends BaseDoc
         file_put_contents($pathName, $this->getTemporaryFileContent());
         return $this;
     }
+
 
     public function getReflectionFileName()
     {
